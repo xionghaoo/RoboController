@@ -82,6 +82,10 @@ Java_com_ubt_robocontroller_TouchManager_test(JNIEnv *env, jobject thiz) {
     LOGCATD("name = %s", appleName());
     auto f = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
     f(1, 2);
+    // 回调Java方法
+    jclass cls = env->GetObjectClass(thiz);
+    jmethodID onMarking_method_id = env->GetMethodID(cls, "onMarking", "(II)V");
+    env->CallVoidMethod(thiz, onMarking_method_id, 1, 2);
 }
 
 extern "C"

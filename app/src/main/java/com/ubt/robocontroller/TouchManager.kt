@@ -3,6 +3,7 @@ package com.ubt.robocontroller
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.PointF
+import timber.log.Timber
 
 class TouchManager {
     companion object {
@@ -10,6 +11,10 @@ class TouchManager {
             System.loadLibrary("opencv_java3")
             System.loadLibrary("robocontroller")
         }
+    }
+
+    fun onMarking(index: Int, code: Int) {
+        Timber.d("onMarking: $index, $code")
     }
 
     external fun test()
