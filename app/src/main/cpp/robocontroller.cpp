@@ -15,8 +15,79 @@ int BUTTON_NUM = 4;
 int markMode = 0;
 int markIndex = 0;
 
+jobject g_touchObj;
+JavaVM *m_pJvm;
+JNIEnv *m_pJniEnv;
+bool m_bIsAttachedOnAThread = false;
+
+JNIEnv* GetJniEnv() {
+
+    // This method might have been called from a different thread than the one that created
+    // this handler. Check to make sure that the JNI is attached and if not attach it to the
+    // new thread.
+
+    // double check it's all ok
+    int nEnvStat = m_pJvm->GetEnv(reinterpret_cast<void**>(&m_pJniEnv), JNI_VERSION_1_6);
+    LOGCATD("env status: %i", nEnvStat);
+    if (nEnvStat == JNI_EDETACHED) {
+
+        std::cout << "GetEnv: not attached. Attempting to attach" << std::endl;
+
+        JavaVMAttachArgs args;
+        args.version = JNI_VERSION_1_6; // choose your JNI version
+        args.name = NULL; // you might want to give the java thread a name
+        args.group = NULL; // you might want to assign the java thread to a ThreadGroup
+
+        if (m_pJvm->AttachCurrentThread(&m_pJniEnv, &args) != 0) {
+            std::cout << "Failed to attach" << std::endl;
+            return nullptr;
+        }
+
+        thread_local struct DetachJniOnExit {
+            ~DetachJniOnExit() {
+                m_pJniEnv->DeleteGlobalRef(g_touchObj);
+                m_pJvm->DetachCurrentThread();
+            }
+        };
+
+
+        m_bIsAttachedOnAThread = true;
+
+    }
+    else if (nEnvStat == JNI_OK) {
+        //
+    }
+    else if (nEnvStat == JNI_EVERSION) {
+        std::cout << "GetEnv: version not supported" << std::endl;
+        return nullptr;
+    }
+
+
+    return m_pJniEnv;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM* vm, void* reserved) {
+    m_pJvm = vm;
+    JNIEnv *env = GetJniEnv();
+    if (env == nullptr) {
+        return JNI_FALSE;
+    }
+    return JNI_VERSION_1_6;
+}
+
+void on_marking(int index, int code) {
+    GetJniEnv();
+    // 回调Java方法
+    jclass cls = m_pJniEnv->GetObjectClass(g_touchObj);
+    jmethodID onMarking_method_id = m_pJniEnv->GetMethodID(cls, "onMarking", "(II)V");
+    m_pJniEnv->CallVoidMethod(g_touchObj, onMarking_method_id, index, code);
+}
+
 void callback_func(int index, int code) {
     LOGCATD("-------------- callback_func: index: %i, code: %i", index, code);
+    on_marking(index, code);
     switch (code) {
         //标定完成 可以使用
         case 1606:
@@ -30,7 +101,6 @@ void callback_func(int index, int code) {
             //显示采集动画，时间：300ms
         case 1600:
             break;
-
             //显示下一个点
         case 1:
         {
@@ -82,10 +152,6 @@ Java_com_ubt_robocontroller_TouchManager_test(JNIEnv *env, jobject thiz) {
     LOGCATD("name = %s", appleName());
     auto f = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
     f(1, 2);
-    // 回调Java方法
-    jclass cls = env->GetObjectClass(thiz);
-    jmethodID onMarking_method_id = env->GetMethodID(cls, "onMarking", "(II)V");
-    env->CallVoidMethod(thiz, onMarking_method_id, 1, 2);
 }
 
 extern "C"
@@ -94,6 +160,8 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
                                                            jobject list, jint pxWidth,
                                                            jint pxHeight) {
     LOGCATD("-------------- initial touch panel ----------------");
+    g_touchObj = env->NewGlobalRef(thiz);
+
     jclass list_cls = env->FindClass("java/util/ArrayList");
     if (list_cls == nullptr) {
         LOGCATE("can not found ArrayList Class");

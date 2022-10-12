@@ -82,7 +82,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 //                Point(1920, 0),
 //                Point(1920, 1080)
 //            )
-//            val result = touchManager.initialTouchPanel(points, 1920, 1080)
+//            val result = g_touchObj.initialTouchPanel(points, 1920, 1080)
 
             // 1280 x 1024
 //            val points = arrayListOf<Point>(
@@ -91,7 +91,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 //                Point(1280, 0),
 //                Point(1280, 1024)
 //            )
-//            val result = touchManager.initialTouchPanel(points, 1280, 1024)
+//            val result = g_touchObj.initialTouchPanel(points, 1280, 1024)
 
             val points = arrayListOf<Point>(
                 Point(0, 0),
@@ -103,12 +103,12 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
             binding.btnMark.setOnClickListener {
 //                if (image != null) {
-//                    touchManager.marking(0, image!!)
+//                    g_touchObj.marking(0, image!!)
 //                } else {
 //                    Toast.makeText(this, "未捕获图片", Toast.LENGTH_SHORT).show();
 //                }
 //                image = getImageBitmap("touch_test.jpg")
-//                touchManager.marking(0, image!!)
+//                g_touchObj.marking(0, image!!)
                 touchManager.setCurrentMode(1)
                 touchManager.setMarkIndex(0)
             }
