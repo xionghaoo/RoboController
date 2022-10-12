@@ -12,6 +12,9 @@ using namespace std;
 
 int BUTTON_NUM = 4;
 
+int markMode = 0;
+int markIndex = 0;
+
 void callback_func(int index, int code) {
     LOGCATD("-------------- callback_func: index: %i, code: %i", index, code);
     switch (code) {
@@ -77,6 +80,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_test(JNIEnv *env, jobject thiz) {
     LOGCATD("name = %s", appleName());
+    auto f = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
+    f(1, 2);
 }
 
 extern "C"
@@ -126,7 +131,7 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
 //    param.m_maxTouch = 1;
     param.m_markCallBack = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
     param.m_markPoints = srcPoints;
-    param.m_dataPath = "/sdcard/Touch";
+    param.m_dataPath = "/sdcard/Download";
     int ret = InitTouchScreen(param);
     LOGCATD("InitTouchScreen: %i", ret);
     LOGCATD("-------------- initial touch panel end ----------------");
@@ -150,5 +155,31 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_setCurrentMode(JNIEnv *env, jobject thiz, jint mode) {
     int ret = SetCurMode(mode);
+    markMode = mode;
     LOGCATD("SetCurMode: %i", ret);
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobject image) {
+    cv::Mat frame;
+    bitmap_to_mat(env, image, frame);
+    cv::Mat dst;
+    cvtColor(frame, dst, CV_BGRA2GRAY);
+    switch (markMode) {
+        case 0:
+            break;
+        case 1:
+            LOGCATD("ProcessMarking %i", markIndex);
+            ProcessMarking(markIndex, dst);
+            break;
+        case 2:
+            LOGCATD("PorcessTouchData %i", markIndex);
+            PorcessTouchData(dst);
+            break;
+    }
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ubt_robocontroller_TouchManager_setMarkIndex(JNIEnv *env, jobject thiz, jint index) {
+    markIndex = index;
 }

@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+apply from: '../versions.gradle'
+
 android {
     namespace 'com.ubt.robocontroller'
     compileSdk 33
@@ -52,6 +54,7 @@ dependencies {
     implementation 'com.github.xionghaoo:camera:0.0.2'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'pub.devrel:easypermissions:3.0.0'
+    implementation dpes.core
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'

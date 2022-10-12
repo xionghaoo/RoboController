@@ -51,7 +51,7 @@ class CameraXPreviewFragment : CameraXFragment<FragmentCameraXPreviewBinding>() 
     }
 
     interface OnFragmentActionListener {
-        fun showAnalysisResult(result: Bitmap?)
+        fun showAnalysisResult(result: Bitmap)
     }
 
     companion object {

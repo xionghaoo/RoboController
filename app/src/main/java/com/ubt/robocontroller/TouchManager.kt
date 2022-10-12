@@ -34,6 +34,13 @@ class TouchManager {
      */
     external fun setCurrentMode(mode: Int)
 
+    external fun setMarkIndex(index: Int)
+
+    /**
+     * 图像处理
+     */
+    external fun process(image: Bitmap)
+
     /**
      * 清除缓存
      */
