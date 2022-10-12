@@ -31,12 +31,12 @@ add_library( # Sets the name of the library.
         ${src-files} )
 
 # opencv
-add_library(opencv_java4 SHARED IMPORTED)
+add_library(opencv_java3 SHARED IMPORTED)
 set_target_properties(
-        opencv_java4
+        opencv_java3
         PROPERTIES
         IMPORTED_LOCATION
-        "${OPENCV_DIR}/libs/${ANDROID_ABI}/libopencv_java4.so"
+        "${OPENCV_DIR}/libs/${ANDROID_ABI}/libopencv_java3.so"
 )
 
 # third library
@@ -56,7 +56,7 @@ find_library( # Sets the name of the path variable.
 find_library(jnigraphics-lib jnigraphics)
 find_library(android-lib android)
 
-set(third-party-libs apple ObjectDetect)
+set(third-party-libs apple TouchScreenCore)
 
 target_link_libraries(
         # Specifies the target library.
@@ -69,6 +69,6 @@ target_link_libraries(
         ${jnigraphics-lib}
         ${third-party-libs}
         ${android-lib}
-        opencv_java4
+        opencv_java3
 )
 

@@ -5,9 +5,7 @@
 #ifndef OPENCV_UTILS_TLS_HPP
 #define OPENCV_UTILS_TLS_HPP
 
-#ifndef OPENCV_CORE_UTILITY_H
-#error "tls.hpp must be included after opencv2/core/utility.hpp or opencv2/core.hpp"
-#endif
+#include <opencv2/core/utility.hpp>
 
 namespace cv {
 
@@ -40,7 +38,11 @@ protected:
     virtual void* createDataInstance() const = 0;
     virtual void  deleteDataInstance(void* pData) const = 0;
 
+#if OPENCV_ABI_COMPATIBILITY > 300
 private:
+#else
+public:
+#endif
     int key_;
 
     friend class cv::details::TlsStorage;  // core/src/system.cpp
@@ -50,8 +52,8 @@ public:
 
 private:
     // Disable copy/assign (noncopyable pattern)
-    TLSDataContainer(TLSDataContainer &) = delete;
-    TLSDataContainer& operator =(const TLSDataContainer &) = delete;
+    TLSDataContainer(TLSDataContainer &);
+    TLSDataContainer& operator =(const TLSDataContainer &);
 };
 
 

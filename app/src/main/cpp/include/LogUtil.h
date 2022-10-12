@@ -8,7 +8,7 @@
 #include<android/log.h>
 #include <sys/time.h>
 
-#define  LOG_TAG "RoboController"
+#define  LOG_TAG "RoboJNI"
 
 #define  LOGCATE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 #define  LOGCATV(...)  __android_log_print(ANDROID_LOG_VERBOSE,LOG_TAG,__VA_ARGS__)
