@@ -98,20 +98,20 @@ class MarkView : View {
         }
     }
 
-    override fun onTouchEvent(e: MotionEvent): Boolean {
-        when (e.action) {
-            MotionEvent.ACTION_DOWN -> {
-                marking()
-            }
-            MotionEvent.ACTION_MOVE -> {
-
-            }
-            MotionEvent.ACTION_UP -> {
-
-            }
-        }
-        return true
-    }
+//    override fun onTouchEvent(e: MotionEvent): Boolean {
+//        when (e.action) {
+//            MotionEvent.ACTION_DOWN -> {
+//                marking()
+//            }
+//            MotionEvent.ACTION_MOVE -> {
+//
+//            }
+//            MotionEvent.ACTION_UP -> {
+//
+//            }
+//        }
+//        return true
+//    }
 
     fun marking() {
         if (status != Status.MARKING) {

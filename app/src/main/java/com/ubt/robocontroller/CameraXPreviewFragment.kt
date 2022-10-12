@@ -13,7 +13,7 @@ import xh.zero.camera.widgets.BaseSurfaceView
 
 class CameraXPreviewFragment : CameraXFragment<FragmentCameraXPreviewBinding>() {
 
-    override var captureSize: Size? = Size(DEFAULT_ANALYZE_IMAGE_WIDTH, DEFAULT_ANALYZE_IMAGE_HEIGHT)
+    override var captureSize: Size? = Size(1280, 960)
     override val surfaceRatio: Size = Size(4, 3)
     private var listener: OnFragmentActionListener? = null
 

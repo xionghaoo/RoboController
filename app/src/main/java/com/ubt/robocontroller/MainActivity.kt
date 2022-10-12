@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import android.util.Size
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
@@ -76,13 +77,13 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-//            val points = arrayListOf<Point>(
-//                Point(0, 0),
-//                Point(0, 1080),
-//                Point(1920, 0),
-//                Point(1920, 1080)
-//            )
-//            val result = g_touchObj.initialTouchPanel(points, 1920, 1080)
+            val points = arrayListOf<Point>(
+                Point(0, 0),
+                Point(0, 1080),
+                Point(1920, 0),
+                Point(1920, 1080)
+            )
+            val result = touchManager.initialTouchPanel(points, 1920, 1080)
 
             // 1280 x 1024
 //            val points = arrayListOf<Point>(
@@ -93,13 +94,15 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 //            )
 //            val result = g_touchObj.initialTouchPanel(points, 1280, 1024)
 
-            val points = arrayListOf<Point>(
-                Point(0, 0),
-                Point(0, 640),
-                Point(480, 0),
-                Point(480, 640)
-            )
-            val result = touchManager.initialTouchPanel(points, 480, 640)
+//            val points = arrayListOf<Point>(
+//                Point(0, 0),
+//                Point(0, 640),
+//                Point(480, 0),
+//                Point(480, 640)
+//            )
+//            val result = touchManager.initialTouchPanel(points, 480, 640)
+            // 设置为标定模式
+            touchManager.setCurrentMode(1)
 
             binding.btnMark.setOnClickListener {
 //                if (image != null) {
@@ -109,13 +112,14 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 //                }
 //                image = getImageBitmap("touch_test.jpg")
 //                g_touchObj.marking(0, image!!)
-                touchManager.setCurrentMode(1)
                 touchManager.setMarkIndex(0)
             }
 
             binding.btnTest.setOnClickListener {
                 touchManager.test()
             }
+
+            initMarkViews()
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -124,6 +128,25 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
+        }
+    }
+
+    private fun initMarkViews() {
+        touchManager.setCallback(object : TouchManager.Callback {
+            override fun onMarking(index: Int, code: Int) {
+                Timber.d("index: $index, code: $code")
+                runOnUiThread {
+                    binding.btnLog.text = "onMarking: index=$index, code=$code"
+                }
+            }
+        })
+
+        binding.vMark0.setOnTouchListener { view, e ->
+            if (e.action == MotionEvent.ACTION_DOWN) {
+                touchManager.setMarkIndex(0)
+                binding.vMark0.marking()
+            }
+            return@setOnTouchListener true
         }
     }
 

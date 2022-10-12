@@ -13,7 +13,7 @@ using namespace std;
 int BUTTON_NUM = 4;
 
 int markMode = 0;
-int markIndex = 0;
+int markIndex = -1;
 
 jobject g_touchObj;
 JavaVM *m_pJvm;
@@ -242,10 +242,12 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
             break;
         case 1:
             LOGCATD("ProcessMarking %i", markIndex);
-            ProcessMarking(markIndex, dst);
+            if (markIndex >= 0) {
+                ProcessMarking(markIndex, dst);
+            }
             break;
         case 2:
-            LOGCATD("PorcessTouchData %i", markIndex);
+            LOGCATD("PorcessTouchData");
             PorcessTouchData(dst);
             break;
     }

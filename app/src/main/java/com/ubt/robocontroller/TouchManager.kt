@@ -13,8 +13,15 @@ class TouchManager {
         }
     }
 
+    private var callback: TouchManager.Callback? = null
+
     fun onMarking(index: Int, code: Int) {
         Timber.d("onMarking: $index, $code")
+        callback?.onMarking(index, code)
+    }
+
+    fun setCallback(cb: Callback) {
+        callback = cb
     }
 
     external fun test()
@@ -55,4 +62,8 @@ class TouchManager {
      * 清理资源
      */
     external fun exitTouchPanel()
+
+    interface Callback {
+        fun onMarking(index: Int, code: Int)
+    }
 }
