@@ -29,7 +29,7 @@ class TouchManager {
     /**
      * 触屏模块初始化
      */
-    external fun initialTouchPanel(points: ArrayList<Point>, pxWidth: Int, pxHeight: Int): Int
+    external fun initialTouchPanel(points: ArrayList<PointF>, pxWidth: Int, pxHeight: Int): Int
 
     /**
      * 标定

@@ -169,28 +169,28 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
     }
     jmethodID list_get = env->GetMethodID(list_cls, "get", "(I)Ljava/lang/Object;");
     jmethodID list_size = env->GetMethodID(list_cls, "size", "()I");
-    jclass jcls = env->FindClass("android/graphics/Point");
+    jclass jcls = env->FindClass("android/graphics/PointF");
     if (jcls == nullptr) {
         LOGCATE("can not found Point Class");
         return -1;
     }
-    jfieldID x_field = env->GetFieldID(jcls, "x", "I");
-    jfieldID y_field = env->GetFieldID(jcls, "y", "I");
+    jfieldID x_field = env->GetFieldID(jcls, "x", "F");
+    jfieldID y_field = env->GetFieldID(jcls, "y", "F");
     int size = env->CallIntMethod(list, list_size);
     vector<MarkPoint> srcPoints;
     for (int i = 0; i < size; ++i) {
         jobject item = env->CallObjectMethod(list, list_get, i);
-        int x = env->GetIntField(item, x_field);
-        int y = env->GetIntField(item, y_field);
+        float x = env->GetFloatField(item, x_field);
+        float y = env->GetFloatField(item, y_field);
         srcPoints.emplace_back(MarkPoint(x, y));
     }
 
     // 测试
     //（5.2%，9.2%），（5.2%，90.7%），（94.8%，9.2%），（94.8%，90.7%）
-    srcPoints[0] = MarkPoint(pxWidth*0.052, pxHeight*0.092);
-    srcPoints[1] = MarkPoint(pxWidth*0.052, pxHeight*0.907);
-    srcPoints[2] = MarkPoint(pxWidth*0.948, pxHeight*0.092);
-    srcPoints[3] = MarkPoint(pxWidth*0.948, pxHeight*0.907);
+//    srcPoints[0] = MarkPoint(pxWidth*0.052, pxHeight*0.092);
+//    srcPoints[1] = MarkPoint(pxWidth*0.052, pxHeight*0.907);
+//    srcPoints[2] = MarkPoint(pxWidth*0.948, pxHeight*0.092);
+//    srcPoints[3] = MarkPoint(pxWidth*0.948, pxHeight*0.907);
 
     for (auto p : srcPoints) {
         LOGCATD("point: ( %f, %f )", p.m_xPoint, p.m_yPoint);
@@ -241,7 +241,7 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
         case 0:
             break;
         case 1:
-            LOGCATD("ProcessMarking %i", markIndex);
+            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
             if (markIndex >= 0) {
                 ProcessMarking(markIndex, dst);
             }
