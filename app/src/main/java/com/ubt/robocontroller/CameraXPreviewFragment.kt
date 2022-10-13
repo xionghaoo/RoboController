@@ -18,6 +18,7 @@ class CameraXPreviewFragment : CameraXFragment<FragmentCameraXPreviewBinding>() 
     private var listener: OnFragmentActionListener? = null
 
     override val cameraId: String by lazy { arguments?.getString("cameraId") ?: "0" }
+    override val initialExposureIndex: Int by lazy { arguments?.getInt("exposureIndex") ?: 0 }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -55,9 +56,10 @@ class CameraXPreviewFragment : CameraXFragment<FragmentCameraXPreviewBinding>() 
     }
 
     companion object {
-        fun newInstance(id: String) = CameraXPreviewFragment().apply {
+        fun newInstance(id: String, exposureIndex: Int) = CameraXPreviewFragment().apply {
             arguments = Bundle().apply {
                 putString("cameraId", id)
+                putInt("exposureIndex", exposureIndex)
             }
         }
     }

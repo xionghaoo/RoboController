@@ -52,10 +52,11 @@ android {
 dependencies {
 
 //    implementation 'com.github.xionghaoo:camera:0.0.2'
-    implementation 'xh.zero.camera:camera:0.0.7'
+    implementation 'xh.zero.camera:camera:0.0.10'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'pub.devrel:easypermissions:3.0.0'
     implementation dpes.core
+    implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'

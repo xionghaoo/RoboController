@@ -1,6 +1,7 @@
 package com.ubt.robocontroller
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -15,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
@@ -23,17 +25,21 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
+import com.google.gson.Gson
 import com.ubt.robocontroller.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import xh.zero.camera.BaseCameraActivity
+import xh.zero.camera.utils.StorageUtil
+import xh.zero.core.utils.FileUtil
 import xh.zero.core.utils.SystemUtil
-import java.io.IOException
-import java.io.InputStream
+import xh.zero.core.utils.ToastUtil
+import java.io.*
 import kotlin.math.roundToInt
 
 class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFragment.OnFragmentActionListener {
@@ -44,6 +50,8 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
     private val touchManager = TouchManager()
     private var lastTime: Long = 0
+    private var cameraId: String = "0"
+    private lateinit var cameraFragment: CameraXPreviewFragment
 
     private val w = 1920
     private val h = 1080
@@ -71,6 +79,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         screen: Size,
         supportImage: Size
     ) {
+        this.cameraId = cameraId
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 try {
@@ -90,10 +99,6 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
             // 权限申请
             permissionTask()
         }
-
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.camera_container, CameraXPreviewFragment.newInstance(cameraId))
-            .commit()
     }
 
     override fun selectCameraId(cameraIds: Array<String>): String = cameraIds[1]
@@ -102,10 +107,6 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         if (System.currentTimeMillis() - lastTime > 1000) {
             touchManager.process(result)
             lastTime = System.currentTimeMillis()
-
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.ivResultImage.setImageBitmap(result)
-            }
         }
     }
 
@@ -121,77 +122,25 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-            val points = arrayListOf<PointF>(
-                PointF(w * 0.052f, h * 0.092f),
-                PointF(w * 0.052f, h * 0.907f),
-                PointF(w * 0.948f, h * 0.092f),
-                PointF(w * 0.948f, h * 0.907f)
-            )
 
-            val markSize = resources.getDimension(R.dimen.mark_view_size)
+            CoroutineScope(Dispatchers.Default).launch {
+                val configFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "config.json")
+                var config: Config? = null
+                try {
+                    val configStr = readFile(configFile)
+                    config = Gson().fromJson(configStr, Config::class.java)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        ToastUtil.show(this@MainActivity, "配置文件加载失败")
+                    }
+                }
 
-            // 设置四个中心点
-            val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
-            lp0.leftMargin = (points[0].x - markSize).roundToInt()
-            lp0.topMargin = (points[0].y - markSize).roundToInt()
-
-            val lp1 = binding.vMark1.layoutParams as ConstraintLayout.LayoutParams
-            lp1.leftMargin = (points[1].x - markSize).roundToInt()
-            lp1.bottomMargin = ((h - points[1].y) - markSize).roundToInt()
-
-            val lp2 = binding.vMark2.layoutParams as ConstraintLayout.LayoutParams
-            lp2.rightMargin = ((w - points[2].x) - markSize).roundToInt()
-            lp2.topMargin = (points[2].y - markSize).roundToInt()
-
-            val lp3 = binding.vMark3.layoutParams as ConstraintLayout.LayoutParams
-            lp3.rightMargin = ((w - points[3].x) - markSize).roundToInt()
-            lp3.bottomMargin = ((h - points[3].y) - markSize).roundToInt()
-
-            points.forEach { p ->
-                Timber.d("point: ${p.x}, ${p.y}")
+                withContext(Dispatchers.Main) {
+                    initial(config)
+                }
             }
 
-            Timber.d("mark size: ${markSize}")
-            Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
-            Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
-
-            val result = touchManager.initialTouchPanel(points, 1920, 1080)
-
-            // 1280 x 1024
-//            val points = arrayListOf<Point>(
-//                Point(0, 0),
-//                Point(0, 1024),
-//                Point(1280, 0),
-//                Point(1280, 1024)
-//            )
-//            val result = g_touchObj.initialTouchPanel(points, 1280, 1024)
-
-//            val points = arrayListOf<Point>(
-//                Point(0, 0),
-//                Point(0, 640),
-//                Point(480, 0),
-//                Point(480, 640)
-//            )
-//            val result = touchManager.initialTouchPanel(points, 480, 640)
-            // 设置为标定模式
-            touchManager.setCurrentMode(1)
-
-            binding.btnMark.setOnClickListener {
-//                if (image != null) {
-//                    g_touchObj.marking(0, image!!)
-//                } else {
-//                    Toast.makeText(this, "未捕获图片", Toast.LENGTH_SHORT).show();
-//                }
-//                image = getImageBitmap("touch_test.jpg")
-//                g_touchObj.marking(0, image!!)
-                touchManager.setMarkIndex(0)
-            }
-
-            binding.btnTest.setOnClickListener {
-                touchManager.test()
-            }
-
-            initMarkViews()
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -203,12 +152,82 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         }
     }
 
+    private fun initial(config: Config?) {
+        cameraFragment = CameraXPreviewFragment.newInstance(cameraId, config?.exposure ?: 0)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.camera_container, cameraFragment)
+            .commit()
+
+        val points = arrayListOf<PointF>(
+            PointF(w * 0.052f, h * 0.092f),
+            PointF(w * 0.052f, h * 0.907f),
+            PointF(w * 0.948f, h * 0.092f),
+            PointF(w * 0.948f, h * 0.907f)
+        )
+
+        val markSize = resources.getDimension(R.dimen.mark_view_size)
+
+        // 设置四个中心点
+        val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
+        lp0.leftMargin = (points[0].x - markSize).roundToInt()
+        lp0.topMargin = (points[0].y - markSize).roundToInt()
+
+        val lp1 = binding.vMark1.layoutParams as ConstraintLayout.LayoutParams
+        lp1.leftMargin = (points[1].x - markSize).roundToInt()
+        lp1.bottomMargin = ((h - points[1].y) - markSize).roundToInt()
+
+        val lp2 = binding.vMark2.layoutParams as ConstraintLayout.LayoutParams
+        lp2.rightMargin = ((w - points[2].x) - markSize).roundToInt()
+        lp2.topMargin = (points[2].y - markSize).roundToInt()
+
+        val lp3 = binding.vMark3.layoutParams as ConstraintLayout.LayoutParams
+        lp3.rightMargin = ((w - points[3].x) - markSize).roundToInt()
+        lp3.bottomMargin = ((h - points[3].y) - markSize).roundToInt()
+
+        points.forEach { p ->
+            Timber.d("point: ${p.x}, ${p.y}")
+        }
+
+        Timber.d("mark size: ${markSize}")
+        Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
+        Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
+
+        // 初始化触控程序
+        touchManager.initialTouchPanel(points, 1920, 1080)
+
+        // 设置为标定模式
+        touchManager.setCurrentMode(1)
+        // 标定第一个点
+        touchManager.setMarkIndex(0)
+
+        // 测试
+        binding.btnMark.visibility = View.GONE
+        binding.btnMark.setOnClickListener {
+            touchManager.setMarkIndex(0)
+        }
+
+//        binding.btnTest.visibility = View.GONE
+        binding.btnTest.setOnClickListener {
+
+        }
+
+        initMarkViews()
+    }
+
     private fun initMarkViews() {
         touchManager.setCallback(object : TouchManager.Callback {
             override fun onMarking(index: Int, code: Int) {
                 Timber.d("index: $index, code: $code")
                 runOnUiThread {
                     binding.btnLog.text = "onMarking: index=$index, code=$code"
+                }
+
+                when(code) {
+                    1600 -> {
+                        if (index == 0) {
+                            binding.vMark0.marking()
+                        }
+                    }
                 }
             }
         })
@@ -247,6 +266,29 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
             e.printStackTrace()
         }
         return BitmapFactory.decodeStream(inStream)
+    }
+
+    fun readFile(file: File): String {
+        val result = StringBuffer()
+        var reader: BufferedReader? = null
+        try {
+            reader = BufferedReader(FileReader(file))
+            var line = reader.readLine()
+            while (line != null) {
+                result.append(line).append("\n")
+                line = reader.readLine()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                reader?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
+        }
+        return result.toString()
     }
 
 }
