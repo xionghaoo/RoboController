@@ -101,7 +101,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         }
     }
 
-    override fun selectCameraId(cameraIds: Array<String>): String = cameraIds[1]
+    override fun selectCameraId(cameraIds: Array<String>): String = cameraIds[0]
 
     override fun showAnalysisResult(result: Bitmap) {
         if (System.currentTimeMillis() - lastTime > 1000) {
