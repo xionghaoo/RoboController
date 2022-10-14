@@ -3,10 +3,9 @@ package com.ubt.robocontroller
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Point
-import android.graphics.PointF
+import android.graphics.*
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -107,6 +106,10 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         if (System.currentTimeMillis() - lastTime > 1000) {
             touchManager.process(result)
             lastTime = System.currentTimeMillis()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                binding.ivResult.setImageBitmap(result)
+            }
         }
     }
 
@@ -199,6 +202,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         touchManager.setCurrentMode(1)
         // 标定第一个点
         touchManager.setMarkIndex(0)
+        binding.tvMarkInfo.text = "当前标定点：0"
 
         // 测试
         binding.btnMark.visibility = View.GONE
@@ -212,6 +216,18 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         }
 
         initMarkViews()
+
+        val sb = StringBuffer()
+        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val characteristic = cameraManager.getCameraCharacteristics(cameraId)
+        val orientation = characteristic.get(CameraCharacteristics.SENSOR_ORIENTATION)
+        sb.append("摄像头角度：$orientation").append("\n")
+        // 打开第一个摄像头
+        val configurationMap = characteristic.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+        configurationMap?.getOutputSizes(ImageFormat.JPEG)?.forEach { size ->
+            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
+        }
+        binding.tvCameraInfo.text = sb.toString()
     }
 
     private fun initMarkViews() {
@@ -227,6 +243,10 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
                         if (index == 0) {
                             binding.vMark0.marking()
                         }
+                    }
+                    1 -> {
+                        touchManager.setMarkIndex(1)
+                        binding.tvMarkInfo.text = "当前标定点：1"
                     }
                 }
             }
