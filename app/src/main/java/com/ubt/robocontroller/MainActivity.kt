@@ -129,13 +129,15 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
             CoroutineScope(Dispatchers.Default).launch {
                 val configFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "config.json")
                 var config: Config? = null
-                try {
-                    val configStr = readFile(configFile)
-                    config = Gson().fromJson(configStr, Config::class.java)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    withContext(Dispatchers.Main) {
-                        ToastUtil.show(this@MainActivity, "配置文件加载失败")
+                if (configFile.exists()) {
+                    try {
+                        val configStr = readFile(configFile)
+                        config = Gson().fromJson(configStr, Config::class.java)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            ToastUtil.show(this@MainActivity, "配置文件加载失败")
+                        }
                     }
                 }
 
@@ -215,6 +217,9 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
         }
 
+        // 设置曝光参数
+//        cameraFragment.setExposure(1)
+
         initMarkViews()
 
         val sb = StringBuffer()
@@ -252,13 +257,13 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
             }
         })
 
-        binding.vMark0.setOnTouchListener { view, e ->
-            if (e.action == MotionEvent.ACTION_DOWN) {
-                touchManager.setMarkIndex(0)
-                binding.vMark0.marking()
-            }
-            return@setOnTouchListener true
-        }
+//        binding.vMark0.setOnTouchListener { view, e ->
+//            if (e.action == MotionEvent.ACTION_DOWN) {
+//                touchManager.setMarkIndex(0)
+//                binding.vMark0.marking()
+//            }
+//            return@setOnTouchListener true
+//        }
     }
 
     private fun setMarkViewCenter(v: MarkView, center: PointF) {
