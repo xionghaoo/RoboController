@@ -56,7 +56,7 @@ find_library( # Sets the name of the path variable.
 find_library(jnigraphics-lib jnigraphics)
 find_library(android-lib android)
 
-set(third-party-libs apple TouchScreenCore)
+set(third-party-libs TouchScreenCore)
 
 target_link_libraries(
         # Specifies the target library.

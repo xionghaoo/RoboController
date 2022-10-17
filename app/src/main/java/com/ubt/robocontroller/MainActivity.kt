@@ -103,13 +103,11 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
     override fun selectCameraId(cameraIds: Array<String>): String = cameraIds[0]
 
     override fun showAnalysisResult(result: Bitmap) {
-        if (System.currentTimeMillis() - lastTime > 1000) {
-            touchManager.process(result)
-            lastTime = System.currentTimeMillis()
+        touchManager.process(result)
+//        lastTime = System.currentTimeMillis()
 
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.ivResult.setImageBitmap(result)
-            }
+        CoroutineScope(Dispatchers.Main).launch {
+            binding.ivResult.setImageBitmap(result)
         }
     }
 

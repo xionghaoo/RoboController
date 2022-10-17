@@ -24,8 +24,6 @@ class TouchManager {
         callback = cb
     }
 
-    external fun test()
-
     /**
      * 触屏模块初始化
      */

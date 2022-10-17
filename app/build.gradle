@@ -55,7 +55,9 @@ android {
 dependencies {
 
 //    implementation 'com.github.xionghaoo:camera:0.0.2'
-    implementation 'xh.zero.camera:camera:0.0.10'
+//    implementation 'xh.zero.camera:camera:0.0.10'
+    implementation project(":camera")
+
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'pub.devrel:easypermissions:3.0.0'
     implementation dpes.core
