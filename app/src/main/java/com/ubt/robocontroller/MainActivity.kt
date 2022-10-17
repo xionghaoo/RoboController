@@ -54,6 +54,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
     private val w = 1920
     private val h = 1080
+    private var currentMarkIndex = 0
 
     private val activityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         permissionTask()
@@ -201,7 +202,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         // 设置为标定模式
         touchManager.setCurrentMode(1)
         // 标定第一个点
-        touchManager.setMarkIndex(0)
+        touchManager.setMarkIndex(currentMarkIndex)
         binding.tvMarkInfo.text = "当前标定点：0"
 
         // 测试
@@ -239,17 +240,24 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
                 Timber.d("index: $index, code: $code")
                 runOnUiThread {
                     binding.btnLog.text = "onMarking: index=$index, code=$code"
-                }
 
-                when(code) {
-                    1600 -> {
-                        if (index == 0) {
-                            binding.vMark0.marking()
+                    when(code) {
+                        1600 -> {
+                            when(currentMarkIndex) {
+                                0 -> binding.vMark0.marking()
+                                1 -> binding.vMark1.marking()
+                                2 -> binding.vMark2.marking()
+                                3 -> binding.vMark3.marking()
+                            }
                         }
-                    }
-                    1 -> {
-                        touchManager.setMarkIndex(1)
-                        binding.tvMarkInfo.text = "当前标定点：1"
+                        1 -> {
+                            if (currentMarkIndex == 3) {
+                                binding.tvMarkInfo.text = "标定完成"
+                            } else {
+                                touchManager.setMarkIndex(++currentMarkIndex)
+                                binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
+                            }
+                        }
                     }
                 }
             }
