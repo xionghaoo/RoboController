@@ -180,7 +180,8 @@ abstract class CameraXFragment<VIEW: ViewBinding> : BaseCameraFragment<VIEW>() {
         val screenAspectRatio = aspectRatio(getSurfaceView().width, getSurfaceView().height)
         Timber.d("Preview aspect ratio: $screenAspectRatio")
 
-        val rotation = getSurfaceView().display.rotation
+//        val rotation = getSurfaceView().display.rotation
+        val rotation = 0
 
         // CameraProvider
         val cameraProvider = cameraProvider

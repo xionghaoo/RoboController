@@ -253,6 +253,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
                         1 -> {
                             if (currentMarkIndex == 3) {
                                 binding.tvMarkInfo.text = "标定完成"
+                                touchManager.setCurrentMode(2)
                             } else {
                                 touchManager.setMarkIndex(++currentMarkIndex)
                                 binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"

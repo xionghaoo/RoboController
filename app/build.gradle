@@ -13,7 +13,7 @@ android {
         applicationId "com.ubt.robocontroller"
         minSdk 28
         targetSdk 33
-        versionCode 1
+        versionCode 6
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -27,10 +27,40 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("../debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+        release {
+            storeFile file("../debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+
+//    signingConfigs {
+//        release {
+//            storeFile file("../robo.jks")
+//            storePassword "ubt123"
+//            keyAlias "robo"
+//            keyPassword "ubt123"
+//            v1SigningEnabled true
+//            v2SigningEnabled true
+//        }
+//    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
@@ -50,6 +80,20 @@ android {
         }
     }
     ndkVersion '21.1.6352462'
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            // variant.buildType.name -> release
+            // project.rootDir -> /Users/destiny/projects/work/Mindustry
+            // project.projectDir -> /Users/destiny/projects/work/Mindustry/app
+            // outputFileName -> app-prod-release.apk
+            // variant.flavorName -> prod
+            // def apk = output.outputFile
+            // example: uatRelease_v1.0.0_20200101a_1.apk
+            def today = new Date().format('yyMMdd').toString()
+            outputFileName = "${variant.name}_v${variant.versionName}_${variant.versionCode}_${today}.apk"
+        }
+    }
 }
 
 dependencies {

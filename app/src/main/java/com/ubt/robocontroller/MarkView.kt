@@ -16,11 +16,11 @@ class MarkView : View {
         private var WRAP_HEIGHT = 200
 
         // 每次渲染增加的半径值
-        private const val STEP = 10
+        private const val STEP = 5
         // 两个圆之间的间隙
         private const val CIRCLE_GAP = 200
         // onDraw刷新时间间隔ms
-        private const val DELAY = 30L
+        private const val DELAY = 50L
         // 起始圆半径
         private const val MIN_RADIUS = 50f
     }
@@ -112,6 +112,10 @@ class MarkView : View {
 //        }
 //        return true
 //    }
+
+    fun setShowTime(time: Int) {
+
+    }
 
     fun marking() {
         if (status != Status.MARKING) {
