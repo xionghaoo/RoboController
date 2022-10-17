@@ -24,6 +24,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
+import com.example.xgesturelibrary.XGestureInterface
 import com.google.gson.Gson
 import com.ubt.robocontroller.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
@@ -45,12 +46,15 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
     companion object {
         private const val REQUEST_CODE_ALL_PERMISSION = 1
+        const val TAG = "MainActivity"
     }
 
     private val touchManager = TouchManager()
     private var lastTime: Long = 0
     private var cameraId: String = "0"
     private lateinit var cameraFragment: CameraXPreviewFragment
+    private val gestureApi = XGestureInterface()
+
 
     private val w = 1920
     private val h = 1080
@@ -78,6 +82,20 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         screen: Size,
         supportImage: Size
     ) {
+
+        gestureApi.recognize_space_gesture_new(this)
+        gestureApi.recognize_space_gesture_image {  gestureModels ->
+            CoroutineScope(Dispatchers.Main).launch {
+                if (gestureModels.size > 0) {
+                    val model = gestureModels.first()
+//                    gestureResultCallback?.success(model.gestureType.name)
+                    Log.d(TAG, "recognizeSpaceGesture: ${model.gestureType}, ${model.points.size}")
+                } else {
+//                    gestureResultCallback?.failure("no gesture model")
+                }
+            }
+        }
+
         this.cameraId = cameraId
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
@@ -103,13 +121,16 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
     override fun selectCameraId(cameraIds: Array<String>): String = cameraIds[0]
 
     override fun showAnalysisResult(result: Bitmap) {
-        if (System.currentTimeMillis() - lastTime > 1000) {
-            touchManager.process(result)
-            lastTime = System.currentTimeMillis()
+//        if (System.currentTimeMillis() - lastTime > 1000) {
+//
+//        }
 
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.ivResult.setImageBitmap(result)
-            }
+        touchManager.process(result)
+//        lastTime = System.currentTimeMillis()
+        gestureApi.recognize_space_gesture_image_send(result, System.currentTimeMillis())
+
+        CoroutineScope(Dispatchers.Main).launch {
+            binding.ivResult.setImageBitmap(result)
         }
     }
 
