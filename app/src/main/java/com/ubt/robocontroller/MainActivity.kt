@@ -105,8 +105,6 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
 
     override fun showAnalysisResult(result: Bitmap) {
         touchManager.process(result)
-//        lastTime = System.currentTimeMillis()
-
         CoroutineScope(Dispatchers.Main).launch {
             binding.ivResult.setImageBitmap(result)
         }

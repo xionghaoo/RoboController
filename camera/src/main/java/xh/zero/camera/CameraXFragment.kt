@@ -22,6 +22,9 @@ import androidx.camera.core.Camera
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.viewbinding.ViewBinding
 import androidx.window.WindowManager
 import timber.log.Timber
@@ -67,8 +70,10 @@ abstract class CameraXFragment<VIEW: ViewBinding> : BaseCameraFragment<VIEW>() {
     protected abstract val surfaceRatio: Size
 
     protected abstract val initialExposureIndex: Int
+    private val cameraLifeCycle = CustomLifeCycle()
 
     override fun onDestroy() {
+        Timber.d("onDestory")
         isStopAnalysis = true
         cameraExecutor.apply {
             shutdown()
@@ -97,6 +102,8 @@ abstract class CameraXFragment<VIEW: ViewBinding> : BaseCameraFragment<VIEW>() {
             displayId = getSurfaceView().display.displayId
             setupCamera()
         }
+
+        cameraLifeCycle.start()
 
         // 手动对焦
         getSurfaceView().setOnGestureDetect(object : GestureDetector.SimpleOnGestureListener() {
@@ -262,10 +269,10 @@ abstract class CameraXFragment<VIEW: ViewBinding> : BaseCameraFragment<VIEW>() {
             // camera provides access to CameraControl & CameraInfo
             camera = if (captureSize != null) {
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, imageAnalyzer)
+                    cameraLifeCycle, cameraSelector, preview, imageCapture, imageAnalyzer)
             } else {
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
+                    cameraLifeCycle, cameraSelector, preview, imageCapture)
             }
 
             setExposure(initialExposureIndex)
@@ -466,6 +473,28 @@ abstract class CameraXFragment<VIEW: ViewBinding> : BaseCameraFragment<VIEW>() {
 //                }, ANIMATION_SLOW_MILLIS)
             }
         }
+    }
+
+    class CustomLifeCycle : LifecycleOwner {
+        private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+
+        init {
+            lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        }
+
+        fun start() {
+            lifecycleRegistry.currentState = Lifecycle.State.STARTED
+        }
+
+        fun doOnResume() {
+            lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        }
+
+        fun doOnDestroy() {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        }
+
+        override fun getLifecycle(): Lifecycle = lifecycleRegistry
     }
 
     companion object {
