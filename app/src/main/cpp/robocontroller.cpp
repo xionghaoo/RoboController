@@ -3,10 +3,6 @@
 #include "touchscreen.h"
 #include "android_utils.h"
 
-extern "C" {
-#include "apple.h"
-}
-
 using namespace std;
 
 
@@ -144,14 +140,6 @@ void callback_func(int index, int code) {
         default:
             break;
     }
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_ubt_robocontroller_TouchManager_test(JNIEnv *env, jobject thiz) {
-    LOGCATD("name = %s", appleName());
-    auto f = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
-    f(1, 2);
 }
 
 extern "C"
