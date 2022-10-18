@@ -195,10 +195,17 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
 
         // 初始化触控程序
-        touchManager.initialTouchPanel(points, 1920, 1080)
+        touchManager.initialTouchPanel(points, w, h)
 
-        // 设置为标定模式
-        touchManager.setCurrentMode(1)
+        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val f1 = File(downloadDir, "module/touchscreen/userdata/Homography.dat")
+        val f2 = File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat")
+        if (f1.exists() && f2.exists()) {
+            touchManager.setCurrentMode(2)
+        } else {
+            touchManager.setCurrentMode(1)
+        }
+
         // 标定第一个点
         touchManager.setMarkIndex(currentMarkIndex)
         binding.tvMarkInfo.text = "当前标定点：0"
