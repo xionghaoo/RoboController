@@ -21,9 +21,7 @@
  *  may have a different license, see the respective files.
  */
 
-package com.serenegiant.serviceclient;
-
-import java.lang.ref.WeakReference;
+package com.ubt.robocontroller.uvc.serviceclient;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -38,8 +36,11 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Surface;
 
-import com.serenegiant.service.IUVCService;
-import com.serenegiant.service.IUVCServiceCallback;
+
+import com.ubt.robocontroller.IUVCService;
+import com.ubt.robocontroller.IUVCServiceCallback;
+
+import java.lang.ref.WeakReference;
 
 public class CameraClient implements ICameraClient {
 	private static final boolean DEBUG = true;
@@ -158,7 +159,7 @@ public class CameraClient implements ICameraClient {
 				final Context context = mWeakContext.get();
 				if (context != null) {
 					final Intent intent = new Intent(IUVCService.class.getName());
-					intent.setPackage("com.serenegiant.usbcameratest4");
+					intent.setPackage("com.ubt.robocontroller");
 					context.bindService(intent,
 						mServiceConnection, Context.BIND_AUTO_CREATE);
 				} else

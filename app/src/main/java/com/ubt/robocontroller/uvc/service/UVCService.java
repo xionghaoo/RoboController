@@ -21,25 +21,33 @@
  *  may have a different license, see the respective files.
  */
 
-package com.serenegiant.service;
+package com.ubt.robocontroller.uvc.service;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Surface;
 
+import androidx.core.app.NotificationCompat;
+
 import com.serenegiant.common.BaseService;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
-import com.serenegiant.usbcameratest4.MainActivity;
-import com.serenegiant.usbcameratest4.R;
+import com.ubt.robocontroller.IUVCService;
+import com.ubt.robocontroller.IUVCServiceCallback;
+import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
+import com.ubt.robocontroller.IUVCSlaveService;
+import com.ubt.robocontroller.R;
+import com.ubt.robocontroller.UVCActivity;
 
 public class UVCService extends BaseService {
 	private static final boolean DEBUG = true;
@@ -120,14 +128,25 @@ public class UVCService extends BaseService {
 	private void showNotification(final CharSequence text) {
 		if (DEBUG) Log.v(TAG, "showNotification:" + text);
         // Set the info for the views that show in the notification panel.
-        final Notification notification = new Notification.Builder(this)
-			.setSmallIcon(R.drawable.ic_launcher)  // the status icon
+        final Notification notification = new NotificationCompat.Builder(this, "robo_uvc_camera_channel")
+			.setSmallIcon(R.mipmap.ic_launcher)  // the status icon
 			.setTicker(text)  // the status text
 			.setWhen(System.currentTimeMillis())  // the time stamp
 			.setContentTitle(getText(R.string.app_name))  // the label of the entry
 			.setContentText(text)  // the contents of the entry
-			.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0))  // The intent to send when the entry is clicked
+			.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, UVCActivity.class), 0))  // The intent to send when the entry is clicked
 			.build();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			// Create the NotificationChannel, but only on API 26+ because
+			// the NotificationChannel class is new and not in the support library
+			String name = "robo_uvc_camera";
+			String description = "robo_uvc_camera";
+			NotificationChannel channel = new NotificationChannel("robo_uvc_camera_channel", name, NotificationManager.IMPORTANCE_DEFAULT);
+			channel.setDescription(description);
+			// Register the channel with the system
+			mNotificationManager.createNotificationChannel(channel);
+		}
 
 		startForeground(NOTIFICATION, notification);
         // Send the notification.
@@ -158,6 +177,7 @@ public class UVCService extends BaseService {
 							Log.w(TAG, "service already exist before connection");
 						}
 						sServiceSync.notifyAll();
+
 					}
 				}
 			}, 0);

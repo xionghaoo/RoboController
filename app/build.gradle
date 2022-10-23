@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.ubt.robocontroller"
-        minSdk 28
+        minSdk 23
         targetSdk 33
         versionCode 12
         versionName "1.0"
@@ -79,7 +79,7 @@ android {
             version '3.18.1'
         }
     }
-    ndkVersion '21.1.6352462'
+    ndkVersion '16.1.4479499'
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
@@ -97,6 +97,13 @@ android {
 }
 
 dependencies {
+
+    implementation project(":usbCameraCommon")
+    implementation project(":libuvccamera")
+    def commonLibVersion = "2.12.4"
+    implementation("com.serenegiant:common:${commonLibVersion}") {
+        exclude module: 'support-v4'
+    }
 
 //    implementation 'com.github.xionghaoo:camera:0.0.2'
 //    implementation 'xh.zero.camera:camera:0.0.10'

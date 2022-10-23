@@ -21,11 +21,7 @@
  *  may have a different license, see the respective files.
  */
 
-package com.serenegiant.service;
-
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
+package com.ubt.robocontroller.uvc.service;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -47,10 +43,20 @@ import com.serenegiant.encoder.MediaMuxerWrapper;
 import com.serenegiant.encoder.MediaSurfaceEncoder;
 import com.serenegiant.glutils.RenderHolderCallback;
 import com.serenegiant.glutils.RendererHolder;
-import com.serenegiant.usb.USBMonitor.UsbControlBlock;
+import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.Size;
+import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
-import com.serenegiant.usbcameratest4.R;
+import com.ubt.robocontroller.IUVCServiceCallback;
+import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
+import com.ubt.robocontroller.R;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+
+import timber.log.Timber;
 
 public final class CameraServer extends Handler {
 	private static final boolean DEBUG = true;
@@ -377,6 +383,13 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				mUVCCamera = new UVCCamera();
 				mUVCCamera.open(mCtrlBlock);
+				// TODO 测试每帧数据
+				mUVCCamera.setFrameCallback(new IFrameCallback() {
+					@Override
+					public void onFrame(ByteBuffer frame) {
+						Timber.d("on image avaliable: " + frame);
+					}
+				}, UVCCamera.PIXEL_FORMAT_YUV420SP);
 				if (DEBUG) Log.i(TAG, "supportedSize:" + mUVCCamera.getSupportedSize());
 			}
 			mHandler.processOnCameraStart();

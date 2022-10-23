@@ -7,6 +7,8 @@ class RoboApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        CrashHandler.getInstance().init(applicationContext)
+
         Timber.plant(Timber.DebugTree())
     }
 }

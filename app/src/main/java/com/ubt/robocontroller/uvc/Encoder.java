@@ -21,7 +21,7 @@
  *  may have a different license, see the respective files.
  */
 
-package com.ubt.uvccameratest;
+package com.ubt.robocontroller.uvc;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;

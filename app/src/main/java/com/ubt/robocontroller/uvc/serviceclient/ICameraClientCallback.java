@@ -21,7 +21,7 @@
  *  may have a different license, see the respective files.
  */
 
-package com.serenegiant.serviceclient;
+package com.ubt.robocontroller.uvc.serviceclient;
 
 public interface ICameraClientCallback {
 	public void onConnect();
