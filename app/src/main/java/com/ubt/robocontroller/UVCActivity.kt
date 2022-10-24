@@ -2,6 +2,7 @@ package com.ubt.robocontroller
 
 import android.Manifest
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -69,7 +70,7 @@ class UVCActivity : BaseActivity() {
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-//            tryGetUsbPermission()
+            tryGetUsbPermission()
             fragmentManager.beginTransaction()
                 .add(R.id.fragment_container, UsbCameraFragment.newInstance())
                 .commit()
@@ -111,7 +112,7 @@ class UVCActivity : BaseActivity() {
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(mUsbPermissionActionReceiver, filter)
 
-        val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
+        val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
 
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
             if (mUsbManager!!.hasPermission(usbDevice)) {
@@ -142,9 +143,9 @@ class UVCActivity : BaseActivity() {
     private fun afterGetUsbPermission(usbDevice: UsbDevice) {
         Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
 
-        fragmentManager.beginTransaction()
-            .add(R.id.fragment_container, UsbCameraFragment.newInstance())
-            .commit()
+//        fragmentManager.beginTransaction()
+//            .add(R.id.fragment_container, UsbCameraFragment.newInstance())
+//            .commit()
 
     }
 }

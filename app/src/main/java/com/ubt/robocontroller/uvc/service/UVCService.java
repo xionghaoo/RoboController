@@ -23,6 +23,9 @@
 
 package com.ubt.robocontroller.uvc.service;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+import static android.app.PendingIntent.FLAG_MUTABLE;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -134,7 +137,7 @@ public class UVCService extends BaseService {
 			.setWhen(System.currentTimeMillis())  // the time stamp
 			.setContentTitle(getText(R.string.app_name))  // the label of the entry
 			.setContentText(text)  // the contents of the entry
-			.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, UVCActivity.class), 0))  // The intent to send when the entry is clicked
+			.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, UVCActivity.class), FLAG_IMMUTABLE))  // The intent to send when the entry is clicked
 			.build();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
