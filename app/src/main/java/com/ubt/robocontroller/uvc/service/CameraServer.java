@@ -382,6 +382,7 @@ public final class CameraServer extends Handler {
 			handleClose();
 			synchronized (mSync) {
 				mUVCCamera = new UVCCamera();
+				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
 				// TODO 测试每帧数据
 				mUVCCamera.setFrameCallback(new IFrameCallback() {
