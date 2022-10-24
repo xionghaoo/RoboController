@@ -11,6 +11,15 @@ class TouchManager {
             System.loadLibrary("opencv_java3")
             System.loadLibrary("robocontroller")
         }
+
+        private var INSTANCE: TouchManager? = null
+
+        fun instance(): TouchManager {
+            if (INSTANCE == null) {
+                INSTANCE = TouchManager()
+            }
+            return INSTANCE!!
+        }
     }
 
     private var callback: TouchManager.Callback? = null

@@ -24,6 +24,7 @@
 package com.ubt.robocontroller.uvc.service;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaScannerConnection;
 import android.media.SoundPool;
@@ -50,6 +51,7 @@ import com.serenegiant.usb.UVCCamera;
 import com.ubt.robocontroller.IUVCServiceCallback;
 import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
 import com.ubt.robocontroller.R;
+import com.ubt.robocontroller.TouchManager;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -343,6 +345,9 @@ public final class CameraServer extends Handler {
 		private MediaMuxerWrapper mMuxer;
 		private MediaSurfaceEncoder mVideoEncoder;
 
+		private Bitmap bitmapBuffer;
+		private TouchManager touchManager = TouchManager.Companion.instance();
+
 		private CameraThread(final Context context, final UsbControlBlock ctrlBlock) {
 			super("CameraThread");
 			if (DEBUG) Log.d(TAG_THREAD, "Constructor:");
@@ -384,13 +389,6 @@ public final class CameraServer extends Handler {
 				mUVCCamera = new UVCCamera();
 				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
-				// TODO 测试每帧数据
-				mUVCCamera.setFrameCallback(new IFrameCallback() {
-					@Override
-					public void onFrame(ByteBuffer frame) {
-						Timber.d("on image avaliable: " + frame);
-					}
-				}, UVCCamera.PIXEL_FORMAT_YUV420SP);
 				if (DEBUG) Log.i(TAG, "supportedSize:" + mUVCCamera.getSupportedSize());
 			}
 			mHandler.processOnCameraStart();
@@ -430,7 +428,7 @@ public final class CameraServer extends Handler {
 					}
 				}
 				if (mUVCCamera == null) return;
-//				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				mFrameWidth = width;
 				mFrameHeight = height;
 				mUVCCamera.setPreviewDisplay(surface);
@@ -547,6 +545,19 @@ public final class CameraServer extends Handler {
 			public void onFrame(final ByteBuffer frame) {
 			}
 		}; */
+
+		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
+			@Override
+			public void onFrame(final ByteBuffer frame) {
+				if (bitmapBuffer == null) {
+					bitmapBuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
+				}
+				bitmapBuffer.copyPixelsFromBuffer(frame);
+				// 处理帧
+
+				touchManager.process(bitmapBuffer);
+			}
+		};
 
 		private final IUVCServiceOnFrameAvailable mOnFrameAvailable = new IUVCServiceOnFrameAvailable() {
 			@Override

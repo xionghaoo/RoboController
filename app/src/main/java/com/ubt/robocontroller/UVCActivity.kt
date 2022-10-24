@@ -70,7 +70,7 @@ class UVCActivity : BaseActivity() {
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-            tryGetUsbPermission()
+//            tryGetUsbPermission()
             fragmentManager.beginTransaction()
                 .add(R.id.fragment_container, UsbCameraFragment.newInstance())
                 .commit()
@@ -106,6 +106,7 @@ class UVCActivity : BaseActivity() {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
+    // 下面是USB权限申请，暂时不需要
     private fun tryGetUsbPermission() {
         mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
