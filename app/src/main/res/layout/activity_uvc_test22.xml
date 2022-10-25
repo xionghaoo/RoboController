@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.ubt.robocontroller.uvc.SimpleUVCCameraTextureView
+        android:id="@+id/UVCCameraTextureView1"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="end|center"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:id="@+id/btn_mark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="标定0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/camera_button" />
+
+        <ToggleButton
+            android:id="@+id/camera_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打开相机"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.ubt.robocontroller.MarkView
+            android:id="@+id/v_mark_0"
+            android:layout_width="@dimen/mark_view_size"
+            android:layout_height="@dimen/mark_view_size"
+            android:layout_marginStart="@dimen/mark_view_margin"
+            android:layout_marginTop="@dimen/mark_view_margin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.ubt.robocontroller.MarkView
+            android:id="@+id/v_mark_3"
+            android:layout_width="@dimen/mark_view_size"
+            android:layout_height="@dimen/mark_view_size"
+            android:layout_margin="@dimen/mark_view_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.ubt.robocontroller.MarkView
+            android:id="@+id/v_mark_1"
+            android:layout_width="@dimen/mark_view_size"
+            android:layout_height="@dimen/mark_view_size"
+            android:layout_margin="@dimen/mark_view_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.ubt.robocontroller.MarkView
+            android:id="@+id/v_mark_2"
+            android:layout_width="@dimen/mark_view_size"
+            android:layout_height="@dimen/mark_view_size"
+            android:layout_margin="@dimen/mark_view_margin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btn_log"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="200dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_camera_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/camera_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_mark_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/btn_mark"
+            app:layout_constraintStart_toStartOf="@+id/btn_mark"
+            app:layout_constraintTop_toBottomOf="@+id/btn_mark" />
+
+        <ImageView
+            android:id="@+id/iv_result"
+            android:layout_width="300dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_mark_info" />
+
+        <ImageButton
+            android:id="@+id/capture_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="捕获"
+            android:layout_margin="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_mark"
+            app:layout_constraintStart_toEndOf="@+id/camera_button"
+            app:layout_constraintTop_toTopOf="@+id/camera_button" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

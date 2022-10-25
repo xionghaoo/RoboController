@@ -20,6 +20,10 @@ import android.widget.CompoundButton
 import android.widget.ImageButton
 import android.widget.Toast
 import android.widget.ToggleButton
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginTop
 import com.serenegiant.common.BaseActivity
 import com.serenegiant.usb.CameraDialog
 import com.serenegiant.usb.CameraDialog.CameraDialogParent
@@ -27,7 +31,14 @@ import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener
 import com.serenegiant.usb.USBMonitor.UsbControlBlock
 import com.serenegiant.usb.UVCCamera
+import com.ubt.robocontroller.CameraXPreviewFragment
+import com.ubt.robocontroller.Config
 import com.ubt.robocontroller.R
+import com.ubt.robocontroller.TouchManager
+import com.ubt.robocontroller.databinding.ActivityUvcTest22Binding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
@@ -36,6 +47,7 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.roundToInt
 
 /**
  * VID_1E45 PID_8022
@@ -52,6 +64,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
         private const val CAMERA_WIDTH = 640
         private const val CAMERA_HEIGHT = 480
+
+        private const val FPS_MIN = 10
+        private const val FPS_MAX = 10
 
         private const val REQUEST_CODE_ALL_PERMISSION = 1
 
@@ -76,14 +91,27 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     private var mCaptureState = 0
     private var mPreviewSurface: Surface? = null
     private val mSync = Any()
-    private var mUVCCameraView: SimpleUVCCameraTextureView? = null
+//    private var mUVCCameraView: SimpleUVCCameraTextureView? = null
 
     // for open&start / stop&close camera preview
-    private var mCameraButton: ToggleButton? = null
+//    private var mCameraButton: ToggleButton? = null
 
     // for start & stop movie capture
-    private var mCaptureButton: ImageButton? = null
+//    private var mCaptureButton: ImageButton? = null
     private var framebuffer: Bitmap? = null
+
+    private val touchManager = TouchManager.instance()
+    private var lastTime: Long = 0
+    private var cameraId: String = "0"
+    private lateinit var cameraFragment: CameraXPreviewFragment
+
+    private val w = 1920
+    private val h = 1080
+//    private val w = 640
+//    private val h = 480
+    private var currentMarkIndex = 0
+
+    private lateinit var binding: ActivityUvcTest22Binding
 
     private val mOnDeviceConnectListener: OnDeviceConnectListener =
         object : OnDeviceConnectListener {
@@ -112,38 +140,47 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                     }
                     try {
                         camera.setPreviewSize(
-                            UVCCamera.DEFAULT_PREVIEW_WIDTH,
-                            UVCCamera.DEFAULT_PREVIEW_HEIGHT,
-                            UVCCamera.FRAME_FORMAT_MJPEG
+                            CAMERA_WIDTH,
+                            CAMERA_HEIGHT,
+                            UVCCamera.FRAME_FORMAT_MJPEG,
+                            FPS_MIN, FPS_MAX, 1f
                         )
 
                     } catch (e: IllegalArgumentException) {
                         try {
                             // fallback to YUV mode
                             camera.setPreviewSize(
-                                UVCCamera.DEFAULT_PREVIEW_WIDTH,
-                                UVCCamera.DEFAULT_PREVIEW_HEIGHT,
-                                UVCCamera.DEFAULT_PREVIEW_MODE
+                                CAMERA_WIDTH,
+                                CAMERA_HEIGHT,
+                                UVCCamera.DEFAULT_PREVIEW_MODE,
+                                FPS_MIN, FPS_MAX, 1f
                             )
                         } catch (e1: IllegalArgumentException) {
                             camera.destroy()
                             return@Runnable
                         }
                     }
-                    val st = mUVCCameraView!!.surfaceTexture
+                    val st = binding.UVCCameraTextureView1!!.surfaceTexture
                     if (st != null) {
                         mPreviewSurface = Surface(st)
                         camera.setPreviewDisplay(mPreviewSurface)
                         camera.startPreview()
                     }
-
+//                    camera.powerlineFrequency = 30
+//                    Timber.d("powerlineFrequency: ${camera.powerlineFrequency}")
                     camera.setFrameCallback({ buffer ->
 //                        framebuffer = yuv2Bmp(buffer.array(), CAMERA_WIDTH, CAMERA_HEIGHT)
                         if (framebuffer == null) {
                             framebuffer = Bitmap.createBitmap(CAMERA_WIDTH, CAMERA_HEIGHT, Bitmap.Config.RGB_565)
                         }
                         framebuffer?.copyPixelsFromBuffer(buffer)
-                        Timber.d("on frame: ${Thread.currentThread()}, ${framebuffer?.width} x ${framebuffer?.height}")
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            binding.ivResult.setImageBitmap(framebuffer)
+                        }
+
+//                        touchManager.process(framebuffer!!)
+//                        Timber.d("on frame: ${Thread.currentThread()}, ${framebuffer?.width} x ${framebuffer?.height}")
                     }, UVCCamera.PIXEL_FORMAT_RGB565)
 
                     synchronized(mSync) { mUVCCamera = camera }
@@ -208,22 +245,23 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_uvc_test2)
+        binding = ActivityUvcTest22Binding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         permissionTask()
 
-        mUVCCameraView =
-            findViewById<View>(R.id.UVCCameraTextureView1) as SimpleUVCCameraTextureView
-        mUVCCameraView?.setAspectRatio((UVCCamera.DEFAULT_PREVIEW_WIDTH / UVCCamera.DEFAULT_PREVIEW_HEIGHT.toFloat()).toDouble())
-        mUVCCameraView?.surfaceTextureListener = mSurfaceTextureListener
+//        mUVCCameraView =
+//            findViewById<View>(R.id.UVCCameraTextureView1) as SimpleUVCCameraTextureView
+        binding.UVCCameraTextureView1?.setAspectRatio((UVCCamera.DEFAULT_PREVIEW_WIDTH / UVCCamera.DEFAULT_PREVIEW_HEIGHT.toFloat()).toDouble())
+        binding.UVCCameraTextureView1?.surfaceTextureListener = mSurfaceTextureListener
 
         mUSBMonitor = USBMonitor(this, mOnDeviceConnectListener)
 
-        mCameraButton = findViewById<View>(R.id.camera_button) as ToggleButton
-        mCameraButton?.setOnCheckedChangeListener(mOnCheckedChangeListener)
+//        mCameraButton = findViewById<View>(R.id.camera_button) as ToggleButton
+        binding.cameraButton?.setOnCheckedChangeListener(mOnCheckedChangeListener)
 
-        mCaptureButton = findViewById<View>(R.id.capture_button) as ImageButton
-        mCaptureButton?.setOnClickListener(mOnClickListener)
+//        mCaptureButton = findViewById<View>(R.id.capture_button) as ImageButton
+        binding.captureButton?.setOnClickListener(mOnClickListener)
 
     }
 
@@ -262,9 +300,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                 mUSBMonitor = null
             }
         }
-        mCameraButton = null
-        mCaptureButton = null
-        mUVCCameraView = null
+//        mCameraButton = null
+//        mCaptureButton = null
+//        mUVCCameraView = null
         super.onDestroy()
     }
 
@@ -278,16 +316,16 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
     private fun setCameraButton(isOn: Boolean) {
         runOnUiThread({
-            if (mCameraButton != null) {
+            if (binding.cameraButton != null) {
                 try {
-                    mCameraButton?.setOnCheckedChangeListener(null)
-                    mCameraButton?.setChecked(isOn)
+                    binding.cameraButton?.setOnCheckedChangeListener(null)
+                    binding.cameraButton?.setChecked(isOn)
                 } finally {
-                    mCameraButton?.setOnCheckedChangeListener(mOnCheckedChangeListener)
+                    binding.cameraButton?.setOnCheckedChangeListener(mOnCheckedChangeListener)
                 }
             }
-            if (!isOn && mCaptureButton != null) {
-                mCaptureButton?.setVisibility(View.INVISIBLE)
+            if (!isOn) {
+                binding.captureButton.setVisibility(View.INVISIBLE)
             }
         }, 0)
     }
@@ -319,9 +357,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
     private fun updateItems() {
         this.runOnUiThread {
-            mCaptureButton!!.visibility =
-                if (mCameraButton!!.isChecked) View.VISIBLE else View.INVISIBLE
-            mCaptureButton!!.setColorFilter(if (mCaptureState == CAPTURE_STOP) 0 else -0x10000)
+            binding.captureButton!!.visibility =
+                if (binding.cameraButton!!.isChecked) View.VISIBLE else View.INVISIBLE
+            binding.captureButton!!.setColorFilter(if (mCaptureState == CAPTURE_STOP) 0 else -0x10000)
         }
     }
 
@@ -394,6 +432,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     private fun permissionTask() {
         if (hasPermission()) {
             tryGetUsbPermission()
+            initial(null)
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -467,19 +506,133 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         Toast.makeText(this@UVCTest2Activity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
     }
 
-    fun yuv2Bmp(data: ByteArray?, width: Int, height: Int): Bitmap? {
-        val rawImage: ByteArray
-        val bitmap: Bitmap
-        val newOpts = BitmapFactory.Options()
-        newOpts.inJustDecodeBounds = true
-        val yuvimage = YuvImage(data, ImageFormat.NV21, width, height, null)
-        val baos: ByteArrayOutputStream = ByteArrayOutputStream()
-        yuvimage.compressToJpeg(Rect(0, 0, width, height), 100, baos)
-        rawImage = baos.toByteArray()
-        val options = BitmapFactory.Options()
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888
-        bitmap = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.size, options)
-        return bitmap
+    private fun initial(config: Config?) {
+//        cameraFragment = CameraXPreviewFragment.newInstance(cameraId, config?.exposure ?: 0)
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.camera_container, cameraFragment)
+//            .commit()
+
+//        fragmentManager.beginTransaction()
+//            .add(R.id.fragment_container, UvcFragment.newInstance())
+//            .commit()
+
+        val points = arrayListOf<PointF>(
+            PointF(w * 0.052f, h * 0.092f),
+            PointF(w * 0.052f, h * 0.907f),
+            PointF(w * 0.948f, h * 0.092f),
+            PointF(w * 0.948f, h * 0.907f)
+        )
+
+        val markSize = resources.getDimension(R.dimen.mark_view_size)
+
+        // 设置四个中心点
+        val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
+        lp0.leftMargin = (points[0].x - markSize).roundToInt()
+        lp0.topMargin = (points[0].y - markSize).roundToInt()
+
+        val lp1 = binding.vMark1.layoutParams as ConstraintLayout.LayoutParams
+        lp1.leftMargin = (points[1].x - markSize).roundToInt()
+        lp1.bottomMargin = ((h - points[1].y) - markSize).roundToInt()
+
+        val lp2 = binding.vMark2.layoutParams as ConstraintLayout.LayoutParams
+        lp2.rightMargin = ((w - points[2].x) - markSize).roundToInt()
+        lp2.topMargin = (points[2].y - markSize).roundToInt()
+
+        val lp3 = binding.vMark3.layoutParams as ConstraintLayout.LayoutParams
+        lp3.rightMargin = ((w - points[3].x) - markSize).roundToInt()
+        lp3.bottomMargin = ((h - points[3].y) - markSize).roundToInt()
+
+        points.forEach { p ->
+            Timber.d("point: ${p.x}, ${p.y}")
+        }
+
+        Timber.d("mark size: ${markSize}")
+        Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
+        Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
+
+        // 初始化触控程序
+        touchManager.initialTouchPanel(points, w, h)
+
+        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val f1 = File(downloadDir, "module/touchscreen/userdata/Homography.dat")
+        val f2 = File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat")
+        if (f1.exists() && f2.exists()) {
+            touchManager.setCurrentMode(2)
+        } else {
+            touchManager.setCurrentMode(1)
+        }
+
+        // 标定第一个点
+        touchManager.setMarkIndex(currentMarkIndex)
+        binding.tvMarkInfo.text = "当前标定点：0"
+
+        // 测试
+        binding.btnMark.visibility = View.GONE
+        binding.btnMark.setOnClickListener {
+            touchManager.setMarkIndex(0)
+        }
+
+//        binding.btnTest.visibility = View.GONE
+//        binding.btnTest.setOnClickListener {
+//
+//        }
+
+        // 设置曝光参数
+//        cameraFragment.setExposure(1)
+
+        initMarkViews()
+
+//        val sb = StringBuffer()
+//        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+//        val characteristic = cameraManager.getCameraCharacteristics(cameraId)
+//        val orientation = characteristic.get(CameraCharacteristics.SENSOR_ORIENTATION)
+//        sb.append("摄像头角度：$orientation").append("\n")
+//        // 打开第一个摄像头
+//        val configurationMap = characteristic.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+//        configurationMap?.getOutputSizes(ImageFormat.JPEG)?.forEach { size ->
+//            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
+//        }
+//        binding.tvCameraInfo.text = sb.toString()
     }
+
+    private fun initMarkViews() {
+        touchManager.setCallback(object : TouchManager.Callback {
+            override fun onMarking(index: Int, code: Int) {
+                Timber.d("index: $index, code: $code")
+                runOnUiThread {
+                    binding.btnLog.text = "onMarking: index=$index, code=$code"
+
+                    when(code) {
+                        1600 -> {
+                            when(currentMarkIndex) {
+                                0 -> binding.vMark0.marking()
+                                1 -> binding.vMark1.marking()
+                                2 -> binding.vMark2.marking()
+                                3 -> binding.vMark3.marking()
+                            }
+                        }
+                        1 -> {
+                            if (currentMarkIndex == 3) {
+                                binding.tvMarkInfo.text = "标定完成"
+                                touchManager.setCurrentMode(2)
+                            } else {
+                                touchManager.setMarkIndex(++currentMarkIndex)
+                                binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+//        binding.vMark0.setOnTouchListener { view, e ->
+//            if (e.action == MotionEvent.ACTION_DOWN) {
+//                touchManager.setMarkIndex(0)
+//                binding.vMark0.marking()
+//            }
+//            return@setOnTouchListener true
+//        }
+    }
+
 
 }
