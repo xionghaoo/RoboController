@@ -37,6 +37,7 @@ import android.util.Log;
 import android.view.Surface;
 
 
+import com.ubt.robocontroller.BuildConfig;
 import com.ubt.robocontroller.IUVCService;
 import com.ubt.robocontroller.IUVCServiceCallback;
 
@@ -159,7 +160,7 @@ public class CameraClient implements ICameraClient {
 				final Context context = mWeakContext.get();
 				if (context != null) {
 					final Intent intent = new Intent(IUVCService.class.getName());
-					intent.setPackage("com.ubt.robocontroller");
+					intent.setPackage(BuildConfig.APPLICATION_ID);
 					context.bindService(intent,
 						mServiceConnection, Context.BIND_AUTO_CREATE);
 				} else
@@ -339,8 +340,8 @@ public class CameraClient implements ICameraClient {
 				}
 			}
 
-//================================================================================
-// callbacks from service
+			//================================================================================
+			// callbacks from service
 			@Override
 			public void onConnected() throws RemoteException {
 
@@ -364,7 +365,16 @@ public class CameraClient implements ICameraClient {
 				}
 			}
 
-//================================================================================
+			@Override
+			public void onMarking(int index, int code) throws RemoteException {
+				if (mParent != null) {
+					if (mParent.mListener != null) {
+						mParent.mListener.onMarking(index, code);
+					}
+				}
+			}
+
+			//================================================================================
 			public void handleSelect(final UsbDevice device) {
 				if (DEBUG) Log.v(TAG_CAMERA, "handleSelect:");
 				final IUVCService service = mParent.getService();

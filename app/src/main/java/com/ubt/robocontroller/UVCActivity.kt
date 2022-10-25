@@ -70,7 +70,7 @@ class UVCActivity : BaseActivity() {
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-//            tryGetUsbPermission()
+            tryGetUsbPermission()
             fragmentManager.beginTransaction()
                 .add(R.id.fragment_container, UsbCameraFragment.newInstance())
                 .commit()

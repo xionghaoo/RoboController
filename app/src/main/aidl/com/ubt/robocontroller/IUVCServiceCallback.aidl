@@ -26,4 +26,5 @@ package com.ubt.robocontroller;
 interface IUVCServiceCallback {
 	oneway void onConnected();
 	oneway void onDisConnected();
+	oneway void onMarking(int index, int code);
 }

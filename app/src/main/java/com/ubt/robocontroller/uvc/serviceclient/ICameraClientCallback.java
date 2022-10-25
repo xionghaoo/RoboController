@@ -26,4 +26,5 @@ package com.ubt.robocontroller.uvc.serviceclient;
 public interface ICameraClientCallback {
 	public void onConnect();
 	public void onDisconnect();
+	public void onMarking(int index, int code);
 }

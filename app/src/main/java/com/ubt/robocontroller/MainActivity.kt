@@ -47,7 +47,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
         private const val REQUEST_CODE_ALL_PERMISSION = 1
     }
 
-    private val touchManager = TouchManager()
+    private val touchManager = TouchManager.instance()
     private var lastTime: Long = 0
     private var cameraId: String = "0"
     private lateinit var cameraFragment: CameraXPreviewFragment

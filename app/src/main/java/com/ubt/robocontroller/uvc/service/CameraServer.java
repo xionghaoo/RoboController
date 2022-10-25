@@ -250,6 +250,21 @@ public final class CameraServer extends Handler {
 		mCallbacks.finishBroadcast();
 	}
 
+	private void processOnMarking(int index, int code) {
+		if (DEBUG) Log.d(TAG, "processOnMarking:");
+		final int n = mCallbacks.beginBroadcast();
+		for (int i = 0; i < n; i++) {
+			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected)
+				try {
+					mCallbacks.getBroadcastItem(i).onMarking(index, code);
+					((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = false;
+				} catch (final Exception e) {
+					Log.e(TAG, "failed to call IOverlayCallback#onDisConnected");
+				}
+		}
+		mCallbacks.finishBroadcast();
+	}
+
 //**********************************************************************
 	private static final int MSG_OPEN = 0;
 	private static final int MSG_CLOSE = 1;
@@ -354,6 +369,13 @@ public final class CameraServer extends Handler {
 			mWeakContext = new WeakReference<Context>(context);
 			mCtrlBlock = ctrlBlock;
 			loadShutterSound(context);
+
+			touchManager.setCallback(new TouchManager.Callback() {
+				@Override
+				public void onMarking(int index, int code) {
+					mHandler.processOnMarking(index, code);
+				}
+			});
 		}
 
 		@Override
@@ -428,7 +450,7 @@ public final class CameraServer extends Handler {
 					}
 				}
 				if (mUVCCamera == null) return;
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
+//				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				mFrameWidth = width;
 				mFrameHeight = height;
 				mUVCCamera.setPreviewDisplay(surface);
@@ -555,7 +577,7 @@ public final class CameraServer extends Handler {
 				bitmapBuffer.copyPixelsFromBuffer(frame);
 				// 处理帧
 
-				touchManager.process(bitmapBuffer);
+//				touchManager.process(bitmapBuffer);
 			}
 		};
 

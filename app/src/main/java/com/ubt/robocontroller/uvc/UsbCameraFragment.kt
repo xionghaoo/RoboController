@@ -95,6 +95,10 @@ class UsbCameraFragment : BaseFragment() {
             setPreviewButton(false)
             enableButtons(false)
         }
+
+        override fun onMarking(index: Int, code: Int) {
+            Timber.d("onMarking: $index, $code")
+        }
     }
 
     private val mOnClickListener =
@@ -107,7 +111,7 @@ class UsbCameraFragment : BaseFragment() {
                     if (list.size > 0) {
                         if (mCameraClient == null) mCameraClient =
                             CameraClient(activity, mCameraListener)
-                        mCameraClient!!.select(list[0])
+                        mCameraClient!!.select(list[CAMERA_INDEX])
                         mCameraClient!!.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
                         mCameraClient!!.connect()
                         setPreviewButton(false)
@@ -238,7 +242,7 @@ class UsbCameraFragment : BaseFragment() {
     }
 
     private fun tryOpenUVCCamera(requestPermission: Boolean) {
-        openUVCCamera(0)
+        openUVCCamera(CAMERA_INDEX)
     }
 
     private fun openUVCCamera(index: Int) {
@@ -286,6 +290,9 @@ class UsbCameraFragment : BaseFragment() {
         private const val CAPTURE_RUNNING = 2
         private const val DEFAULT_WIDTH = 640
         private const val DEFAULT_HEIGHT = 480
+
+        private const val CAMERA_INDEX = 1
+
         fun newInstance() = UsbCameraFragment()
     }
 }
