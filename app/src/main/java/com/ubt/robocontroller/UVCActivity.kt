@@ -17,8 +17,10 @@ import com.serenegiant.common.BaseActivity
 import com.ubt.robocontroller.databinding.ActivityMainBinding
 import com.ubt.robocontroller.databinding.ActivityUvcactivityBinding
 import com.ubt.robocontroller.uvc.UsbCameraFragment
+import com.ubt.robocontroller.uvc.UvcFragment
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
+import timber.log.Timber
 import xh.zero.core.replaceFragment
 import xh.zero.core.utils.SystemUtil
 import java.io.File
@@ -70,9 +72,9 @@ class UVCActivity : BaseActivity() {
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
     private fun permissionTask() {
         if (hasPermission()) {
-            tryGetUsbPermission()
+//            tryGetUsbPermission()
             fragmentManager.beginTransaction()
-                .add(R.id.fragment_container, UsbCameraFragment.newInstance())
+                .add(R.id.fragment_container, UvcFragment.newInstance())
                 .commit()
         } else {
             EasyPermissions.requestPermissions(
@@ -142,6 +144,7 @@ class UVCActivity : BaseActivity() {
     }
 
     private fun afterGetUsbPermission(usbDevice: UsbDevice) {
+        Timber.d("afterGetUsbPermission: ${usbDevice.deviceId}")
         Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
 
 //        fragmentManager.beginTransaction()

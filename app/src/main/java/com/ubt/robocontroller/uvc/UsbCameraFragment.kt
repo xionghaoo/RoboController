@@ -40,7 +40,7 @@ class UsbCameraFragment : BaseFragment() {
     private val mOnDeviceConnectListener: OnDeviceConnectListener =
         object : OnDeviceConnectListener {
             override fun onAttach(device: UsbDevice) {
-                if (!updateCameraDialog() && binding.cameraView!!.hasSurface()) {
+                if (!updateCameraDialog() && binding.cameraView.hasSurface()) {
                     tryOpenUVCCamera(true)
                 }
             }
