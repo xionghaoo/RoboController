@@ -25,6 +25,10 @@ package com.ubt.robocontroller.uvc.service;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.media.AudioManager;
 import android.media.MediaScannerConnection;
 import android.media.SoundPool;
@@ -53,6 +57,7 @@ import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.TouchManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -450,7 +455,7 @@ public final class CameraServer extends Handler {
 					}
 				}
 				if (mUVCCamera == null) return;
-//				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
+//				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
 				mFrameWidth = width;
 				mFrameHeight = height;
 				mUVCCamera.setPreviewDisplay(surface);
@@ -571,15 +576,38 @@ public final class CameraServer extends Handler {
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
 			public void onFrame(final ByteBuffer frame) {
-				if (bitmapBuffer == null) {
-					bitmapBuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
-				}
-				bitmapBuffer.copyPixelsFromBuffer(frame);
-				// 处理帧
-
-//				touchManager.process(bitmapBuffer);
+				Timber.d("on frame");
+//				if (bitmapBuffer == null) {
+//					bitmapBuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
+//				}
+				bitmapBuffer = yuv2Bmp(frame.array(), mFrameWidth, mFrameHeight);
+//				bitmapBuffer.copyPixelsFromBuffer(frame);
+//				// 处理帧
+				touchManager.process(bitmapBuffer);
+				Timber.d("onFrame: %i x %i", bitmapBuffer.getWidth(), bitmapBuffer.getHeight());
 			}
 		};
+
+		public static Bitmap yuv2Bmp(byte[] data, int width, int height) {
+			ByteArrayOutputStream baos;
+			byte[] rawImage;
+			Bitmap bitmap;
+			BitmapFactory.Options newOpts = new BitmapFactory.Options();
+			newOpts.inJustDecodeBounds = true;
+			YuvImage yuvimage = new YuvImage(
+					data,
+					ImageFormat.NV21,
+					width,
+					height,
+					null);
+			baos = new ByteArrayOutputStream();
+			yuvimage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
+			rawImage = baos.toByteArray();
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+			bitmap = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.length, options);
+			return bitmap;
+		}
 
 		private final IUVCServiceOnFrameAvailable mOnFrameAvailable = new IUVCServiceOnFrameAvailable() {
 			@Override

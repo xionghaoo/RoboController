@@ -10,7 +10,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.ubt.robocontroller"
+        applicationId "com.ubt.robocontroller.uvc"
         minSdk 23
         targetSdk 33
         versionCode 12

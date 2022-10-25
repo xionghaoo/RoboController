@@ -204,7 +204,6 @@ class UsbCameraFragment : BaseFragment() {
 
         binding.cameraView.setAspectRatio((UVCCamera.DEFAULT_PREVIEW_WIDTH / UVCCamera.DEFAULT_PREVIEW_HEIGHT.toFloat()).toDouble())
         binding.cameraViewSub.setOnClickListener(mOnClickListener)
-//        mUSBMonitor = USBMonitor(context, mOnDeviceConnectListener)
 
     }
 
@@ -288,10 +287,12 @@ class UsbCameraFragment : BaseFragment() {
         private const val CAPTURE_STOP = 0
         private const val CAPTURE_PREPARE = 1
         private const val CAPTURE_RUNNING = 2
+        // ["2592x1944","160x120","320x240","352x288","640x480","800x600","1024x768",
+        // "1280x720","1280x1024","2048x1536","1920x1080","2592x1944"]]
         private const val DEFAULT_WIDTH = 640
         private const val DEFAULT_HEIGHT = 480
 
-        private const val CAMERA_INDEX = 1
+        private const val CAMERA_INDEX = 0
 
         fun newInstance() = UsbCameraFragment()
     }
