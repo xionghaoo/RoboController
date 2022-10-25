@@ -49,7 +49,7 @@ android {
 			jni.srcDirs = []
 		}
 	}
-    ndkVersion '16.1.4479499'
+    ndkVersion '21.4.7075529'
 }
 
 tasks.withType(JavaCompile) {

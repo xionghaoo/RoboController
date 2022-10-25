@@ -79,7 +79,7 @@ android {
             version '3.18.1'
         }
     }
-    ndkVersion '16.1.4479499'
+    ndkVersion '21.4.7075529'
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
