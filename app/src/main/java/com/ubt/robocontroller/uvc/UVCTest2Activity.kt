@@ -2,6 +2,7 @@ package com.ubt.robocontroller.uvc
 
 import android.Manifest
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -42,6 +43,7 @@ import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import xh.zero.core.utils.SystemUtil
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -65,8 +67,8 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         private const val CAMERA_WIDTH = 640
         private const val CAMERA_HEIGHT = 480
 
-        private const val FPS_MIN = 10
-        private const val FPS_MAX = 10
+        private const val FPS_MIN = 30
+        private const val FPS_MAX = 30
 
         private const val REQUEST_CODE_ALL_PERMISSION = 1
 
@@ -107,8 +109,6 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
     private val w = 1920
     private val h = 1080
-//    private val w = 640
-//    private val h = 480
     private var currentMarkIndex = 0
 
     private lateinit var binding: ActivityUvcTest22Binding
@@ -179,7 +179,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                             binding.ivResult.setImageBitmap(framebuffer)
                         }
 
-//                        touchManager.process(framebuffer!!)
+                        touchManager.process(framebuffer!!)
 //                        Timber.d("on frame: ${Thread.currentThread()}, ${framebuffer?.width} x ${framebuffer?.height}")
                     }, UVCCamera.PIXEL_FORMAT_RGB565)
 
@@ -244,6 +244,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        SystemUtil.toFullScreenMode(this)
         super.onCreate(savedInstanceState)
         binding = ActivityUvcTest22Binding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -267,6 +268,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
     override fun onStart() {
         super.onStart()
+
         synchronized(mSync) {
             if (mUSBMonitor != null) {
                 mUSBMonitor!!.register()
@@ -432,7 +434,6 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     private fun permissionTask() {
         if (hasPermission()) {
             tryGetUsbPermission()
-            initial(null)
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -474,7 +475,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(mUsbPermissionActionReceiver, filter)
 
-        val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
+        val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
 
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
             if (mUsbManager!!.hasPermission(usbDevice)) {
@@ -503,6 +504,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     }
 
     private fun afterGetUsbPermission(usbDevice: UsbDevice) {
+
+        initial(null)
+
         Toast.makeText(this@UVCTest2Activity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
     }
 
@@ -523,7 +527,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
             PointF(w * 0.948f, h * 0.907f)
         )
 
-        val markSize = resources.getDimension(R.dimen.mark_view_size)
+        val markSize = resources.getDimension(R.dimen.mark_view_size) / 2f
 
         // 设置四个中心点
         val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
