@@ -132,7 +132,7 @@ class UVCActivity : BaseActivity() {
             PointF(w * 0.948f, h * 0.907f)
         )
 
-        val markSize = resources.getDimension(R.dimen.mark_view_size)
+        val markSize = resources.getDimension(R.dimen.mark_view_size) / 2f
 
         // 设置四个中心点
         val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams

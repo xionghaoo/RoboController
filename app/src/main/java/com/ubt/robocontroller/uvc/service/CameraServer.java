@@ -349,8 +349,8 @@ public final class CameraServer extends Handler {
 		private int mEncoderSurfaceId;
 		private int mFrameWidth, mFrameHeight;
 
-		private static int FPS_MIN = 30;
-		private static int FPS_MAX = 30;
+		private static final int FPS_MIN = 15;
+		private static final int FPS_MAX = 30;
 		/**
 		 * shutter sound
 		 */
@@ -417,7 +417,7 @@ public final class CameraServer extends Handler {
 			handleClose();
 			synchronized (mSync) {
 				mUVCCamera = new UVCCamera();
-				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
+//				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
 				if (DEBUG) Log.i(TAG, "supportedSize:" + mUVCCamera.getSupportedSize());
 			}
@@ -447,11 +447,11 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG, FPS_MIN, FPS_MAX, 1f);
+					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX,  UVCCamera.FRAME_FORMAT_MJPEG,1f);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
-						mUVCCamera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE, FPS_MIN, FPS_MAX, 1f);
+						mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.DEFAULT_PREVIEW_MODE, 1f);
 					} catch (final IllegalArgumentException e1) {
 						mUVCCamera.destroy();
 						mUVCCamera = null;
@@ -576,19 +576,22 @@ public final class CameraServer extends Handler {
 			}
 		}; */
 
-		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
-			@Override
-			public void onFrame(final ByteBuffer frame) {
-				Timber.d("on frame buffer: " + Thread.currentThread() + ", " + frame.array().length);
-//				if (framebuffer == null) {
-//					framebuffer = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.RGB_565);
-//				}
-//				framebuffer.copyPixelsFromBuffer(frame);
-////				// 处理帧
-////				touchManager.process(bitmapBuffer);
-//				Timber.d("onFrame: %i x %i", framebuffer.getWidth(), framebuffer.getHeight());
-//				frame.clear();
+		private final IFrameCallback mIFrameCallback = frame -> {
+			try {
+//				Timber.d("on frame buffer: " + Thread.currentThread());
+				if (framebuffer == null) {
+					framebuffer = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.RGB_565);
+				}
+				framebuffer.copyPixelsFromBuffer(frame);
+				Timber.d("handle framebuffer " + framebuffer.getWidth() + " x " + framebuffer.getHeight());
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+
+//				framebuffer.copyPixelsFromBuffer(frame);
+//////				// 处理帧
+//				touchManager.process(framebuffer);
+//				frame.clear();
 		};
 
 		public static Bitmap yuv2Bmp(byte[] data, int width, int height) {
