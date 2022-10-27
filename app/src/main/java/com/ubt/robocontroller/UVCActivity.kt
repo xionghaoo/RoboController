@@ -1,6 +1,7 @@
 package com.ubt.robocontroller
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.BroadcastReceiver
@@ -280,6 +281,17 @@ class UVCActivity : BaseActivity() {
         Timber.d("afterGetUsbPermission: ${usbDevice.deviceId}")
         Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
         initial(usbDevice.productId)
+
+    }
+
+    override fun onBackPressed() {
+        AlertDialog.Builder(this)
+            .setMessage("确认退出应用？")
+            .setPositiveButton("确认") { p0, p1 ->
+                finish()
+            }
+            .setNegativeButton("取消", null)
+            .show()
 
     }
 }

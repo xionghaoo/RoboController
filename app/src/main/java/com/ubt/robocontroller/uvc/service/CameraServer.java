@@ -348,6 +348,9 @@ public final class CameraServer extends Handler {
 	    private final WeakReference<Context> mWeakContext;
 		private int mEncoderSurfaceId;
 		private int mFrameWidth, mFrameHeight;
+
+		private static int FPS_MIN = 30;
+		private static int FPS_MAX = 30;
 		/**
 		 * shutter sound
 		 */
@@ -365,7 +368,7 @@ public final class CameraServer extends Handler {
 		private MediaMuxerWrapper mMuxer;
 		private MediaSurfaceEncoder mVideoEncoder;
 
-		private Bitmap bitmapBuffer;
+		private Bitmap framebuffer;
 		private TouchManager touchManager = TouchManager.Companion.instance();
 
 		private CameraThread(final Context context, final UsbControlBlock ctrlBlock) {
@@ -444,18 +447,18 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
+					mUVCCamera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG, FPS_MIN, FPS_MAX, 1f);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
-						mUVCCamera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
+						mUVCCamera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE, FPS_MIN, FPS_MAX, 1f);
 					} catch (final IllegalArgumentException e1) {
 						mUVCCamera.destroy();
 						mUVCCamera = null;
 					}
 				}
 				if (mUVCCamera == null) return;
-//				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				mFrameWidth = width;
 				mFrameHeight = height;
 				mUVCCamera.setPreviewDisplay(surface);
@@ -576,15 +579,15 @@ public final class CameraServer extends Handler {
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
 			public void onFrame(final ByteBuffer frame) {
-				Timber.d("on frame");
-//				if (bitmapBuffer == null) {
-//					bitmapBuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
+				Timber.d("on frame buffer: " + Thread.currentThread() + ", " + frame.array().length);
+//				if (framebuffer == null) {
+//					framebuffer = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.RGB_565);
 //				}
-				bitmapBuffer = yuv2Bmp(frame.array(), mFrameWidth, mFrameHeight);
-//				bitmapBuffer.copyPixelsFromBuffer(frame);
-//				// 处理帧
-				touchManager.process(bitmapBuffer);
-				Timber.d("onFrame: %i x %i", bitmapBuffer.getWidth(), bitmapBuffer.getHeight());
+//				framebuffer.copyPixelsFromBuffer(frame);
+////				// 处理帧
+////				touchManager.process(bitmapBuffer);
+//				Timber.d("onFrame: %i x %i", framebuffer.getWidth(), framebuffer.getHeight());
+//				frame.clear();
 			}
 		};
 

@@ -101,9 +101,7 @@ class UvcFragment : BaseFragment() {
             mUSBMonitor = USBMonitor(activity.applicationContext, mOnDeviceConnectListener)
             val filters = DeviceFilter.getDeviceFilters(activity, R.xml.device_filter)
             mUSBMonitor?.setDeviceFilter(filters)
-
-            mUSBMonitor?.register()
-            openUVCCamera()
+//            openUVCCamera()
         }
     }
 
@@ -124,7 +122,7 @@ class UvcFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-
+        mUSBMonitor?.register()
     }
 
     override fun onPause() {
