@@ -1,12 +1,11 @@
 package com.ubt.robocontroller.uvc
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
+import android.content.DialogInterface.OnClickListener
 import android.graphics.*
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
@@ -28,6 +27,7 @@ import androidx.core.view.marginTop
 import com.serenegiant.common.BaseActivity
 import com.serenegiant.usb.CameraDialog
 import com.serenegiant.usb.CameraDialog.CameraDialogParent
+import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener
 import com.serenegiant.usb.USBMonitor.UsbControlBlock
@@ -119,6 +119,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         object : OnDeviceConnectListener {
             override fun onAttach(device: UsbDevice) {
                 Toast.makeText(this@UVCTest2Activity, "USB_DEVICE_ATTACHED", Toast.LENGTH_SHORT).show()
+                mUSBMonitor?.requestPermission(device)
             }
 
             override fun onConnect(
@@ -181,7 +182,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                             binding.ivResult.setImageBitmap(framebuffer)
                         }
 
-                        touchManager.process(framebuffer!!)
+//                        touchManager.process(framebuffer!!)
 //                        Timber.d("on frame: ${Thread.currentThread()}, ${framebuffer?.width} x ${framebuffer?.height}")
                     }, UVCCamera.PIXEL_FORMAT_RGB565)
 
@@ -259,7 +260,8 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         binding.UVCCameraTextureView1?.surfaceTextureListener = mSurfaceTextureListener
 
         mUSBMonitor = USBMonitor(this, mOnDeviceConnectListener)
-
+        val filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter)
+        mUSBMonitor?.setDeviceFilter(filters)
 //        mCameraButton = findViewById<View>(R.id.camera_button) as ToggleButton
         binding.cameraButton?.setOnCheckedChangeListener(mOnCheckedChangeListener)
 
@@ -279,6 +281,17 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         }
         setCameraButton(false)
         updateItems()
+    }
+
+    override fun onBackPressed() {
+        AlertDialog.Builder(this)
+            .setMessage("确认退出应用？")
+            .setPositiveButton("确认") { p0, p1 ->
+                finish()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+
     }
 
 //    override fun onStop() {

@@ -114,14 +114,14 @@ class UVCActivity : BaseActivity() {
         }
     }
 
-    private fun initial(config: Config?) {
+    private fun initial(pid: Int) {
 //        cameraFragment = CameraXPreviewFragment.newInstance(cameraId, config?.exposure ?: 0)
 //        supportFragmentManager.beginTransaction()
 //            .replace(R.id.camera_container, cameraFragment)
 //            .commit()
 
         fragmentManager.beginTransaction()
-            .add(R.id.fragment_container, UvcFragment.newInstance())
+            .add(R.id.fragment_container, UvcFragment.newInstance(pid))
             .commit()
 
         val points = arrayListOf<PointF>(
@@ -207,7 +207,6 @@ class UVCActivity : BaseActivity() {
     private fun permissionTask() {
         if (hasPermission()) {
             tryGetUsbPermission()
-
         } else {
             EasyPermissions.requestPermissions(
                 this,
@@ -244,6 +243,7 @@ class UVCActivity : BaseActivity() {
     private fun tryGetUsbPermission() {
         mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
+        // 注册权限接收广播
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(mUsbPermissionActionReceiver, filter)
 
@@ -253,6 +253,7 @@ class UVCActivity : BaseActivity() {
             if (mUsbManager!!.hasPermission(usbDevice)) {
                 afterGetUsbPermission(usbDevice)
             } else {
+                // 请求USB权限
                 mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
             }
         }
@@ -278,11 +279,7 @@ class UVCActivity : BaseActivity() {
     private fun afterGetUsbPermission(usbDevice: UsbDevice) {
         Timber.d("afterGetUsbPermission: ${usbDevice.deviceId}")
         Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
-        initial(null)
-
-//        fragmentManager.beginTransaction()
-//            .add(R.id.fragment_container, UsbCameraFragment.newInstance())
-//            .commit()
+        initial(usbDevice.productId)
 
     }
 }

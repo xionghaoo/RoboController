@@ -1,7 +1,9 @@
 package com.ubt.robocontroller.uvc
 
+import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -27,6 +29,8 @@ class UvcFragment : BaseFragment() {
     private lateinit var binding: FragmentUvcBinding
     private var mUSBMonitor: USBMonitor? = null
     private var mCameraClient: ICameraClient? = null
+
+    private val pid: Int by lazy { arguments?.getInt(ARG_PID) ?: 0 }
 
     private val mOnDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
         object : USBMonitor.OnDeviceConnectListener {
@@ -97,6 +101,9 @@ class UvcFragment : BaseFragment() {
             mUSBMonitor = USBMonitor(activity.applicationContext, mOnDeviceConnectListener)
             val filters = DeviceFilter.getDeviceFilters(activity, R.xml.device_filter)
             mUSBMonitor?.setDeviceFilter(filters)
+
+            mUSBMonitor?.register()
+            openUVCCamera()
         }
     }
 
@@ -111,21 +118,22 @@ class UvcFragment : BaseFragment() {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.cameraView.setAspectRatio((UVCCamera.DEFAULT_PREVIEW_WIDTH / UVCCamera.DEFAULT_PREVIEW_HEIGHT.toFloat()).toDouble())
+        binding.cameraView.aspectRatio = (UVCCamera.DEFAULT_PREVIEW_WIDTH / UVCCamera.DEFAULT_PREVIEW_HEIGHT.toFloat()).toDouble()
+
     }
 
     override fun onResume() {
         super.onResume()
-        mUSBMonitor?.register()
+
     }
 
     override fun onPause() {
         mCameraClient?.removeSurface(binding.cameraView.surface)
-        mUSBMonitor!!.unregister()
         super.onPause()
     }
 
     override fun onDestroy() {
+        mUSBMonitor!!.unregister()
         mCameraClient?.release()
         super.onDestroy()
     }
@@ -140,26 +148,44 @@ class UvcFragment : BaseFragment() {
     }
 
     private fun tryOpenUVCCamera(requestPermission: Boolean) {
-        openUVCCamera(CAMERA_INDEX)
+        openUVCCamera()
     }
 
-    private fun openUVCCamera(index: Int) {
+    private fun openUVCCamera() {
         if (!mUSBMonitor!!.isRegistered) return
-        val list = mUSBMonitor!!.deviceList
-        if (list.size > index) {
-            if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
-            mCameraClient!!.select(list[index])
-            mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
-            mCameraClient!!.connect()
+//        val list = mUSBMonitor!!.deviceList
+        val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        val list = usbManager.deviceList.values
+        list.forEach { device ->
+            if (device.productId == pid) {
+                ToastUtil.show(context, "打开相机")
+
+                if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
+                mCameraClient!!.select(device)
+                mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
+                mCameraClient!!.connect()
+            }
         }
+//        if (list.size > index) {
+//            if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
+//            mCameraClient!!.select(list[index])
+//            mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
+//            mCameraClient!!.connect()
+//        }
     }
 
     companion object {
         private const val CAMERA_WIDTH = 640
         private const val CAMERA_HEIGHT = 480
 
-        private const val CAMERA_INDEX = 1
+//        private const val CAMERA_INDEX = 1
+
+        private const val ARG_PID = "ARG_PID"
         
-        fun newInstance() = UvcFragment()
+        fun newInstance(pid: Int) = UvcFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_PID, pid)
+            }
+        }
     }
 }
