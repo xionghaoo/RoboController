@@ -52,7 +52,9 @@ import java.util.*
 import kotlin.math.roundToInt
 
 /**
- * VID_1E45 PID_8022
+ * 红外相机
+ * vid:0x05A3;
+ * Pid:0x9230;
  */
 class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
@@ -478,6 +480,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
 
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
+//            usbDevice.productId
             if (mUsbManager!!.hasPermission(usbDevice)) {
                 afterGetUsbPermission(usbDevice)
             } else {
