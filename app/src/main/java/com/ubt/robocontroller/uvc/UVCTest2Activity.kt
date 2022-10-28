@@ -113,6 +113,12 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     private val h = 1080
     private var currentMarkIndex = 0
 
+    private var lastFrameTime = 0L
+    private var lastHandleTime = 0L
+    private var frameCount = 0
+    private var fpsUnHandle = 0
+    private var fpsHandle = 0
+
     private lateinit var binding: ActivityUvcTest22Binding
 
     private val mOnDeviceConnectListener: OnDeviceConnectListener =
@@ -172,7 +178,13 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //                    camera.powerlineFrequency = 30
 //                    Timber.d("powerlineFrequency: ${camera.powerlineFrequency}")
                     camera.setFrameCallback({ buffer ->
-//                        framebuffer = yuv2Bmp(buffer.array(), CAMERA_WIDTH, CAMERA_HEIGHT)
+                        lastFrameTime = System.currentTimeMillis()
+                        frameCount ++
+                        if (frameCount > 30) {
+                            val curTime = System.currentTimeMillis()
+//                            fpsUnHandle = curTime
+                        }
+                        // ---------处理业务-------------
                         if (framebuffer == null) {
                             framebuffer = Bitmap.createBitmap(CAMERA_WIDTH, CAMERA_HEIGHT, Bitmap.Config.RGB_565)
                         }
@@ -182,8 +194,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                             binding.ivResult.setImageBitmap(framebuffer)
                         }
 
-//                        touchManager.process(framebuffer!!)
-//                        Timber.d("on frame: ${Thread.currentThread()}, ${framebuffer?.width} x ${framebuffer?.height}")
+                        touchManager.process(framebuffer!!)
+                        // -----------------------------
+                        lastHandleTime = System.currentTimeMillis()
                     }, UVCCamera.PIXEL_FORMAT_RGB565)
 
                     synchronized(mSync) { mUVCCamera = camera }
