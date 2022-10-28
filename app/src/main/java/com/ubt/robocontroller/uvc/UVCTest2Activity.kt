@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.*
-import android.content.DialogInterface.OnClickListener
 import android.graphics.*
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
@@ -13,13 +12,12 @@ import android.os.Bundle
 import android.os.Environment
 import android.text.TextUtils
 import android.util.Log
+import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.CompoundButton
-import android.widget.ImageButton
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
@@ -39,12 +37,12 @@ import com.ubt.robocontroller.TouchManager
 import com.ubt.robocontroller.databinding.ActivityUvcTest22Binding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import xh.zero.core.utils.SystemUtil
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -71,6 +69,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
         private const val FPS_MIN = 30
         private const val FPS_MAX = 30
+        private const val FACTOR = 1f
 
         private const val REQUEST_CODE_ALL_PERMISSION = 1
 
@@ -116,7 +115,8 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
     private var lastFrameTime = 0L
     private var lastHandleTime = 0L
     private var frameCount = 0
-    private var fpsUnHandle = 0
+    private var frameCountHandle = 0
+    private var fps = 0
     private var fpsHandle = 0
 
     private lateinit var binding: ActivityUvcTest22Binding
@@ -133,6 +133,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                 ctrlBlock: UsbControlBlock,
                 createNew: Boolean
             ) {
+                Timber.d("onConnect")
                 synchronized(mSync) {
                     if (mUVCCamera != null) {
                         mUVCCamera!!.destroy()
@@ -152,7 +153,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                             CAMERA_WIDTH,
                             CAMERA_HEIGHT,
                             UVCCamera.FRAME_FORMAT_MJPEG,
-                            FPS_MIN, FPS_MAX, 1f
+                            FPS_MIN, FPS_MAX, FACTOR
                         )
 
                     } catch (e: IllegalArgumentException) {
@@ -162,7 +163,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                                 CAMERA_WIDTH,
                                 CAMERA_HEIGHT,
                                 UVCCamera.DEFAULT_PREVIEW_MODE,
-                                FPS_MIN, FPS_MAX, 1f
+                                FPS_MIN, FPS_MAX, FACTOR
                             )
                         } catch (e1: IllegalArgumentException) {
                             camera.destroy()
@@ -175,14 +176,25 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         camera.setPreviewDisplay(mPreviewSurface)
                         camera.startPreview()
                     }
-//                    camera.powerlineFrequency = 30
+                    runOnUiThread {
+                        showSizeList(camera.supportedSizeList.map { size -> Size(size.width, size.height) })
+                    }
+//                    camera.powerlineFrequency = 60
+//                    camera.whiteBlance
+//                    camera.gamma
 //                    Timber.d("powerlineFrequency: ${camera.powerlineFrequency}")
                     camera.setFrameCallback({ buffer ->
-                        lastFrameTime = System.currentTimeMillis()
+                        Timber.d("onFrame -----------------------")
+                        if (lastHandleTime == 0L) lastHandleTime = System.currentTimeMillis()
+
+                        // 计算处理前的帧数
+                        if (lastFrameTime == 0L) lastFrameTime = System.currentTimeMillis()
                         frameCount ++
-                        if (frameCount > 30) {
+                        if (frameCount >= 30) {
                             val curTime = System.currentTimeMillis()
-//                            fpsUnHandle = curTime
+                            fps = (frameCount.toFloat() / (curTime - lastFrameTime) * 1000).roundToInt()
+                            frameCount = 0
+                            lastFrameTime = 0L
                         }
                         // ---------处理业务-------------
                         if (framebuffer == null) {
@@ -190,13 +202,26 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         }
                         framebuffer?.copyPixelsFromBuffer(buffer)
 
-                        CoroutineScope(Dispatchers.Main).launch {
-                            binding.ivResult.setImageBitmap(framebuffer)
+//                        CoroutineScope(Dispatchers.Main).launch {
+//                            binding.ivResult.setImageBitmap(framebuffer)
+//                        }
+                        touchManager.process(framebuffer!!)
+//                        Thread.sleep(50)
+                        // -----------------------------
+                        // 计算处理后的帧数
+                        frameCountHandle ++
+                        if (frameCountHandle >= 30) {
+                            val curTime = System.currentTimeMillis()
+                            fpsHandle = (frameCountHandle.toFloat() / (curTime - lastHandleTime) * 1000).roundToInt()
+                            frameCountHandle = 0
+                            lastHandleTime = 0
                         }
 
-                        touchManager.process(framebuffer!!)
-                        // -----------------------------
-                        lastHandleTime = System.currentTimeMillis()
+                        runOnUiThread {
+                            binding.tvFps.text = "相机fps: $fps"
+                            binding.tvFpsHandle.text = "算法处理后的fps: $fpsHandle"
+                        }
+
                     }, UVCCamera.PIXEL_FORMAT_RGB565)
 
                     synchronized(mSync) { mUVCCamera = camera }
@@ -291,6 +316,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                 mUSBMonitor!!.register()
             }
             if (mUVCCamera != null) mUVCCamera!!.startPreview()
+
         }
         setCameraButton(false)
         updateItems()
@@ -626,6 +652,14 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
 //        }
 //        binding.tvCameraInfo.text = sb.toString()
+    }
+
+    private fun showSizeList(sizeList: List<Size>) {
+        val sb = StringBuffer()
+        sizeList.forEach { size ->
+            sb.append("support size: ${size.width} x ${size.height}").append("\n")
+        }
+        binding.tvCameraInfo.text = sb.toString()
     }
 
     private fun initMarkViews() {

@@ -20,6 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="标定0"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/camera_button" />
@@ -113,6 +114,23 @@
             app:layout_constraintBottom_toTopOf="@+id/btn_mark"
             app:layout_constraintStart_toEndOf="@+id/camera_button"
             app:layout_constraintTop_toTopOf="@+id/camera_button" />
+
+        <TextView
+            android:id="@+id/tv_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toEndOf="@+id/v_mark_0"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_fps_handle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="@+id/tv_fps"
+            app:layout_constraintTop_toBottomOf="@+id/tv_fps" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
