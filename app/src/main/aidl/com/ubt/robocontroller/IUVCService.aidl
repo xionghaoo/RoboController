@@ -48,4 +48,7 @@ interface IUVCService {
 	void startRecording(int serviceId);
 	void stopRecording(int serviceId);
 	void captureStillImage(int serviceId, String path);
+	void setExposureMode(int serviceId, int mode);
+	void setExposure(int serviceId, int exposure);
+	int getExposure(int serviceId);
 }

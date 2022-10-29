@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.view.View
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -28,10 +29,12 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
 import com.serenegiant.common.BaseActivity
+import com.serenegiant.usb.UVCCamera
 import com.ubt.robocontroller.databinding.ActivityMainBinding
 import com.ubt.robocontroller.databinding.ActivityUvcactivityBinding
 import com.ubt.robocontroller.uvc.UsbCameraFragment
 import com.ubt.robocontroller.uvc.UvcFragment
+import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
@@ -42,7 +45,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-class UVCActivity : BaseActivity() {
+class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     companion object {
         private const val DEBUG = true
@@ -72,8 +75,9 @@ class UVCActivity : BaseActivity() {
 
     }
 
-    var mUsbManager: UsbManager? = null
+    private var mUsbManager: UsbManager? = null
     private lateinit var binding: ActivityUvcactivityBinding
+    private lateinit var fragment: UvcFragment
 
     private val touchManager = TouchManager.instance()
     private var lastTime: Long = 0
@@ -115,14 +119,31 @@ class UVCActivity : BaseActivity() {
         }
     }
 
-    private fun initial(pid: Int) {
-//        cameraFragment = CameraXPreviewFragment.newInstance(cameraId, config?.exposure ?: 0)
-//        supportFragmentManager.beginTransaction()
-//            .replace(R.id.camera_container, cameraFragment)
-//            .commit()
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Timber.d("onNewIntent")
+        if (fragment.isAdded) {
+            fragment.addSurface()
+        }
+    }
 
+    override fun onMarking(index: Int, code: Int) {
+        Timber.d("onMarking: $index, $code")
+    }
+
+    override fun onFpsChange(fps: Int, fpsHandle: Int) {
+        Timber.d("onFpsChange: $fps, $fpsHandle")
+
+        runOnUiThread {
+            binding.tvFps.text = "相机fps: $fps"
+            binding.tvFpsHandle.text = "算法处理后的fps: $fpsHandle"
+        }
+    }
+
+    private fun initial(pid: Int) {
+        fragment = UvcFragment.newInstance(pid)
         fragmentManager.beginTransaction()
-            .add(R.id.fragment_container, UvcFragment.newInstance(pid))
+            .add(R.id.fragment_container, fragment)
             .commit()
 
         val points = arrayListOf<PointF>(
@@ -187,6 +208,31 @@ class UVCActivity : BaseActivity() {
         }
 
         // 设置曝光参数
+        binding.btnSetExposure.setOnClickListener {
+            fragment.setExposureMode(UVCCamera.EXPOSURE_MODE_AUTO_OFF)
+            updateExposure()
+        }
+
+        binding.sbExposure.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                Timber.d("set progress: $progress")
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                fragment.setExposure(seekBar?.progress ?: 0)
+                CoroutineScope(Dispatchers.Default).launch {
+                    delay(200)
+                    withContext(Dispatchers.Main) {
+                        updateExposure()
+                    }
+                }
+            }
+        })
+
 //        cameraFragment.setExposure(1)
 
 //        initMarkViews()
@@ -202,6 +248,13 @@ class UVCActivity : BaseActivity() {
 //            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
 //        }
 //        binding.tvCameraInfo.text = sb.toString()
+    }
+
+    private fun updateExposure() {
+        if (fragment.isAdded) {
+            val exposure = fragment.getExposure()
+            binding.tvExposure.text = "曝光值：$exposure"
+        }
     }
 
     @AfterPermissionGranted(REQUEST_CODE_ALL_PERMISSION)
@@ -288,7 +341,7 @@ class UVCActivity : BaseActivity() {
         AlertDialog.Builder(this)
             .setMessage("确认退出应用？")
             .setPositiveButton("确认") { p0, p1 ->
-                finish()
+                super.onBackPressed()
             }
             .setNegativeButton("取消", null)
             .show()

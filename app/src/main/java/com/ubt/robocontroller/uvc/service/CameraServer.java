@@ -220,18 +220,40 @@ public final class CameraServer extends Handler {
 		}
 	}
 
+	public void setExposureMode(int mode) {
+		if (mRendererHolder != null) {
+			sendMessage(obtainMessage(MSG_SET_EXPOSURE_MODE, mode));
+		}
+	}
+
+	public void setExposure(int exposure) {
+		if (mRendererHolder != null) {
+			sendMessage(obtainMessage(MSG_SET_EXPOSURE, exposure));
+		}
+	}
+
+	public int getExposure() {
+		final CameraThread thread = mWeakThread.get();
+		if (thread != null) {
+			return thread.getExposure();
+		} else {
+			return -1;
+		}
+	}
+
 //********************************************************************************
 	private void processOnCameraStart() {
 		if (DEBUG) Log.d(TAG, "processOnCameraStart:");
 		try {
 			final int n = mCallbacks.beginBroadcast();
 			for (int i = 0; i < n; i++) {
-				if (!((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected)
-				try {
-					mCallbacks.getBroadcastItem(i).onConnected();
-					((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = true;
-				} catch (final Exception e) {
-					Log.e(TAG, "failed to call IOverlayCallback#onFrameAvailable");
+				if (!((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected) {
+					try {
+						mCallbacks.getBroadcastItem(i).onConnected();
+						((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = true;
+					} catch (final Exception e) {
+						Log.e(TAG, "failed to call IOverlayCallback#onFrameAvailable");
+					}
 				}
 			}
 			mCallbacks.finishBroadcast();
@@ -244,28 +266,42 @@ public final class CameraServer extends Handler {
 		if (DEBUG) Log.d(TAG, "processOnCameraStop:");
 		final int n = mCallbacks.beginBroadcast();
 		for (int i = 0; i < n; i++) {
-			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected)
-			try {
-				mCallbacks.getBroadcastItem(i).onDisConnected();
-				((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = false;
-			} catch (final Exception e) {
-				Log.e(TAG, "failed to call IOverlayCallback#onDisConnected");
+			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected) {
+				try {
+					mCallbacks.getBroadcastItem(i).onDisConnected();
+					((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = false;
+				} catch (final Exception e) {
+					Log.e(TAG, "failed to call IOverlayCallback#onDisConnected");
+				}
 			}
 		}
 		mCallbacks.finishBroadcast();
 	}
 
 	private void processOnMarking(int index, int code) {
-		if (DEBUG) Log.d(TAG, "processOnMarking:");
 		final int n = mCallbacks.beginBroadcast();
 		for (int i = 0; i < n; i++) {
-			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected)
+			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected) {
 				try {
 					mCallbacks.getBroadcastItem(i).onMarking(index, code);
-					((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected = false;
 				} catch (final Exception e) {
-					Log.e(TAG, "failed to call IOverlayCallback#onDisConnected");
+					Log.e(TAG, "failed to call IOverlayCallback#processOnMarking");
 				}
+			}
+		}
+		mCallbacks.finishBroadcast();
+	}
+
+	private void processOnFpsChange(int fps, int fpsHandle) {
+		final int n = mCallbacks.beginBroadcast();
+		for (int i = 0; i < n; i++) {
+			if (((CallbackCookie)mCallbacks.getBroadcastCookie(i)).isConnected) {
+				try {
+					mCallbacks.getBroadcastItem(i).onFpsChange(fps, fpsHandle);
+				} catch (final Exception e) {
+					Log.e(TAG, "failed to call IOverlayCallback#processOnFpsChange");
+				}
+			}
 		}
 		mCallbacks.finishBroadcast();
 	}
@@ -280,6 +316,8 @@ public final class CameraServer extends Handler {
 	private static final int MSG_CAPTURE_STOP = 6;
 	private static final int MSG_MEDIA_UPDATE = 7;
 	private static final int MSG_RELEASE = 9;
+	private static final int MSG_SET_EXPOSURE_MODE = 10;
+	private static final int MSG_SET_EXPOSURE = 11;
 
 	@Override
 	public void handleMessage(final Message msg) {
@@ -312,6 +350,12 @@ public final class CameraServer extends Handler {
 			break;
 		case MSG_RELEASE:
 			thread.handleRelease();
+			break;
+		case MSG_SET_EXPOSURE_MODE:
+			thread.setExposureMode((int)msg.obj);
+			break;
+		case MSG_SET_EXPOSURE:
+			thread.setExposure((int)msg.obj);
 			break;
 		default:
 			throw new RuntimeException("unsupported message:what=" + msg.what);
@@ -349,8 +393,17 @@ public final class CameraServer extends Handler {
 		private int mEncoderSurfaceId;
 		private int mFrameWidth, mFrameHeight;
 
-		private static final int FPS_MIN = 15;
-		private static final int FPS_MAX = 30;
+		private static final int FIX_FPS = 30;
+		private static final int FPS_MIN = FIX_FPS;
+		private static final int FPS_MAX = FIX_FPS;
+		private static final int FACTOR = 1;
+
+		private long lastFrameTime = 0;
+		private long lastHandleTime = 0;
+		private int frameCount = 0;
+		private int frameCountHandle = 0;
+		private int fps = 0;
+		private int fpsHandle = 0;
 		/**
 		 * shutter sound
 		 */
@@ -395,10 +448,12 @@ public final class CameraServer extends Handler {
 		public CameraServer getHandler() {
 			if (DEBUG) Log.d(TAG_THREAD, "getHandler:");
 			synchronized (mSync) {
-				if (mHandler == null)
-				try {
-					mSync.wait();
-				} catch (final InterruptedException e) {
+				if (mHandler == null) {
+					try {
+						mSync.wait();
+					} catch (final InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 			return mHandler;
@@ -419,6 +474,7 @@ public final class CameraServer extends Handler {
 				mUVCCamera = new UVCCamera();
 //				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
+				mUVCCamera.updateCameraParams();
 				if (DEBUG) Log.i(TAG, "supportedSize:" + mUVCCamera.getSupportedSize());
 			}
 			mHandler.processOnCameraStart();
@@ -447,11 +503,11 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX,  UVCCamera.FRAME_FORMAT_MJPEG,1f);
+					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_MJPEG,FACTOR);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
-						mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.DEFAULT_PREVIEW_MODE, 1f);
+						mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.DEFAULT_PREVIEW_MODE, FACTOR);
 					} catch (final IllegalArgumentException e1) {
 						mUVCCamera.destroy();
 						mUVCCamera = null;
@@ -569,6 +625,18 @@ public final class CameraServer extends Handler {
 				Looper.myLooper().quit();
 		}
 
+		public void setExposureMode(int mode) {
+			mUVCCamera.setExposureMode(mode);
+		}
+
+		public void setExposure(int exposure) {
+			mUVCCamera.setExposure(exposure);
+		}
+
+		public int getExposure() {
+			return mUVCCamera.getExposure();
+		}
+
 /*		// if you need frame data as ByteBuffer on Java side, you can use this callback method with UVCCamera#setFrameCallback
 		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 			@Override
@@ -577,13 +645,22 @@ public final class CameraServer extends Handler {
 		}; */
 
 		private final IFrameCallback mIFrameCallback = frame -> {
+			// 处理前帧率
+			if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
+			if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
+			frameCount ++;
+			if (frameCount >= FIX_FPS) {
+				long curTime = System.currentTimeMillis();
+				fps = (int) (((float) frameCount) / (curTime - lastFrameTime) * 1000f);
+				frameCount = 0;
+				lastFrameTime = 0;
+			}
+			// 业务处理
 			try {
-//				Timber.d("on frame buffer: " + Thread.currentThread());
 				if (framebuffer == null) {
 					framebuffer = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.RGB_565);
 				}
 				framebuffer.copyPixelsFromBuffer(frame);
-				Timber.d("handle framebuffer " + framebuffer.getWidth() + " x " + framebuffer.getHeight());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -592,6 +669,15 @@ public final class CameraServer extends Handler {
 //////				// 处理帧
 //				touchManager.process(framebuffer);
 //				frame.clear();
+			// 处理后帧率
+			frameCountHandle ++;
+			if (frameCountHandle >= FIX_FPS) {
+				long curTime = System.currentTimeMillis();
+				fpsHandle = (int) (((float) frameCountHandle) / (curTime - lastHandleTime) * 1000f);
+				frameCountHandle = 0;
+				lastHandleTime = 0;
+				mHandler.processOnFpsChange(fps, fpsHandle);
+			}
 		};
 
 		public static Bitmap yuv2Bmp(byte[] data, int width, int height) {

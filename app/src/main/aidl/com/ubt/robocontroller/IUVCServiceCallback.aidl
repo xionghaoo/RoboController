@@ -27,4 +27,5 @@ interface IUVCServiceCallback {
 	oneway void onConnected();
 	oneway void onDisConnected();
 	oneway void onMarking(int index, int code);
+	oneway void onFpsChange(int fps, int fpsHandle);
 }

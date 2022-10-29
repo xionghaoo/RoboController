@@ -130,6 +130,8 @@ public class UVCService extends BaseService {
 	 */
 	private void showNotification(final CharSequence text) {
 		if (DEBUG) Log.v(TAG, "showNotification:" + text);
+		Intent intent = new Intent(this, UVCActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE);
         // Set the info for the views that show in the notification panel.
         final Notification notification = new NotificationCompat.Builder(this, "robo_uvc_camera_channel")
 			.setSmallIcon(R.mipmap.ic_launcher)  // the status icon
@@ -137,7 +139,7 @@ public class UVCService extends BaseService {
 			.setWhen(System.currentTimeMillis())  // the time stamp
 			.setContentTitle(getText(R.string.app_name))  // the label of the entry
 			.setContentText(text)  // the contents of the entry
-			.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, UVCActivity.class), FLAG_IMMUTABLE))  // The intent to send when the entry is clicked
+			.setContentIntent(pendingIntent)  // The intent to send when the entry is clicked
 			.build();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -437,7 +439,34 @@ public class UVCService extends BaseService {
 			}
 		}
 
-    };
+		@Override
+		public void setExposureMode(int serviceId, int mode) throws RemoteException {
+			if (DEBUG) Log.d(TAG, "mBasicBinder#setExposureMode:" + mode);
+			final CameraServer server = getCameraServer(serviceId);
+			if (server != null) {
+				server.setExposureMode(mode);
+			}
+		}
+
+		@Override
+		public void setExposure(int serviceId, int exposure) throws RemoteException {
+			if (DEBUG) Log.d(TAG, "mBasicBinder#setExposure:" + exposure);
+			final CameraServer server = getCameraServer(serviceId);
+			if (server != null) {
+				server.setExposure(exposure);
+			}
+		}
+
+		@Override
+		public int getExposure(int serviceId) throws RemoteException {
+			final CameraServer server = getCameraServer(serviceId);
+			if (server != null) {
+				return server.getExposure();
+			} else {
+				return -1;
+			}
+		}
+	};
 
 //********************************************************************************
 	private final IUVCSlaveService.Stub mSlaveBinder = new IUVCSlaveService.Stub() {

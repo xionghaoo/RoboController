@@ -43,6 +43,8 @@ import com.ubt.robocontroller.IUVCServiceCallback;
 
 import java.lang.ref.WeakReference;
 
+import timber.log.Timber;
+
 public class CameraClient implements ICameraClient {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraClient";
@@ -153,6 +155,32 @@ public class CameraClient implements ICameraClient {
 		}
 	}
 
+	@Override
+	public void setExposureMode(int mode) {
+		final CameraHandler handler = mWeakHandler.get();
+		if (handler != null) {
+			handler.sendMessage(handler.obtainMessage(MSG_SET_EXPOSURE_MODE, mode));
+		}
+	}
+
+	@Override
+	public void setExposure(int exposure) {
+		final CameraHandler handler = mWeakHandler.get();
+		if (handler != null) {
+			handler.sendMessage(handler.obtainMessage(MSG_SET_EXPOSURE, exposure));
+		}
+	}
+
+	@Override
+	public int getExposure() {
+		final CameraHandler handler = mWeakHandler.get();
+		if (handler != null) {
+			return handler.getExposure();
+		} else {
+			return -1;
+		}
+	}
+
 	protected boolean doBindService() {
 		if (DEBUG) Log.v(TAG, "doBindService:");
 		synchronized (mServiceSync) {
@@ -234,6 +262,8 @@ public class CameraClient implements ICameraClient {
 	private static final int MSG_STOP_RECORDING = 7;
 	private static final int MSG_CAPTURE_STILL = 8;
 	private static final int MSG_RESIZE = 9;
+	private static final int MSG_SET_EXPOSURE_MODE = 10;
+	private static final int MSG_SET_EXPOSURE = 11;
 	private static final int MSG_RELEASE = 99;
 
 	private static final class CameraHandler extends Handler {
@@ -251,13 +281,26 @@ public class CameraClient implements ICameraClient {
 
 		public boolean isRecording() {
 			final IUVCService service = mCameraTask.mParent.getService();
-			if (service != null)
-			try {
-				return service.isRecording(mCameraTask.mServiceId);
-			} catch (final RemoteException e) {
-				if (DEBUG) Log.e(TAG, "isRecording:", e);
+			if (service != null) {
+				try {
+					return service.isRecording(mCameraTask.mServiceId);
+				} catch (final RemoteException e) {
+					if (DEBUG) Log.e(TAG, "isRecording:", e);
+				}
 			}
 			return false;
+		}
+
+		public int getExposure() {
+			final IUVCService service = mCameraTask.mParent.getService();
+			if (service != null) {
+				try {
+					return service.getExposure(mCameraTask.mServiceId);
+				} catch (final RemoteException e) {
+					if (DEBUG) Log.e(TAG, "isRecording:", e);
+				}
+			}
+			return -1;
 		}
 
 		@Override
@@ -290,6 +333,12 @@ public class CameraClient implements ICameraClient {
 			case MSG_RESIZE:
 				mCameraTask.handleResize(msg.arg1, msg.arg2);
 				break;
+			case MSG_SET_EXPOSURE_MODE:
+				mCameraTask.setExposureMode((int) msg.obj);
+				break;
+			case MSG_SET_EXPOSURE:
+				mCameraTask.setExposure((int) msg.obj);
+				break;
 			case MSG_RELEASE:
 				mCameraTask.handleRelease();
 				mCameraTask = null;
@@ -314,10 +363,11 @@ public class CameraClient implements ICameraClient {
 
 			public CameraHandler getHandler() {
 				synchronized (mSync) {
-					if (mHandler == null)
-					try {
-						mSync.wait();
-					} catch (final InterruptedException e) {
+					if (mHandler == null) {
+						try {
+							mSync.wait();
+						} catch (final InterruptedException e) {
+						}
 					}
 				}
 				return mHandler;
@@ -374,6 +424,15 @@ public class CameraClient implements ICameraClient {
 				}
 			}
 
+			@Override
+			public void onFpsChange(int fps, int fpsHandle) throws RemoteException {
+				if (mParent != null) {
+					if (mParent.mListener != null) {
+						mParent.mListener.onFpsChange(fps, fpsHandle);
+					}
+				}
+			}
+
 			//================================================================================
 			public void handleSelect(final UsbDevice device) {
 				if (DEBUG) Log.v(TAG_CAMERA, "handleSelect:");
@@ -396,30 +455,32 @@ public class CameraClient implements ICameraClient {
 			public void handleConnect() {
 				if (DEBUG) Log.v(TAG_CAMERA, "handleConnect:");
 				final IUVCService service = mParent.getService();
-				if (service != null)
-				try {
-					if (!mIsConnected/*!service.isConnected(mServiceId)*/) {
-						service.connect(mServiceId);
-					} else {
-						onConnected();
+				if (service != null) {
+					try {
+						if (!mIsConnected/*!service.isConnected(mServiceId)*/) {
+							service.connect(mServiceId);
+						} else {
+							onConnected();
+						}
+					} catch (final RemoteException e) {
+						if (DEBUG) Log.e(TAG_CAMERA, "handleConnect:", e);
 					}
-				} catch (final RemoteException e) {
-					if (DEBUG) Log.e(TAG_CAMERA, "handleConnect:", e);
 				}
 			}
 
 			public void handleDisconnect() {
 				if (DEBUG) Log.v(TAG_CAMERA, "handleDisconnect:");
 				final IUVCService service = mParent.getService();
-				if (service != null)
-				try {
-					if (service.isConnected(mServiceId)) {
-						service.disconnect(mServiceId);
-					} else {
-						onDisConnected();
+				if (service != null) {
+					try {
+						if (service.isConnected(mServiceId)) {
+							service.disconnect(mServiceId);
+						} else {
+							onDisConnected();
+						}
+					} catch (final RemoteException e) {
+						if (DEBUG) Log.e(TAG_CAMERA, "handleDisconnect:", e);
 					}
-				} catch (final RemoteException e) {
-					if (DEBUG) Log.e(TAG_CAMERA, "handleDisconnect:", e);
 				}
 				mIsConnected = false;
 			}
@@ -491,6 +552,30 @@ public class CameraClient implements ICameraClient {
 					service.resize(mServiceId, width, height);
 				} catch (final RemoteException e) {
 					if (DEBUG) Log.e(TAG_CAMERA, "handleResize:", e);
+				}
+			}
+
+			public void setExposureMode(int mode) {
+				if (DEBUG) Log.v(TAG, String.format("setExposureMode(%d)", mode));
+				final IUVCService service = mParent.getService();
+				if (service != null) {
+					try {
+						service.setExposureMode(mServiceId, mode);
+					} catch (final RemoteException e) {
+						if (DEBUG) Log.e(TAG_CAMERA, "setExposureMode:", e);
+					}
+				}
+			}
+
+			public void setExposure(int exposure) {
+				if (DEBUG) Log.v(TAG, String.format("setExposure(%d)", exposure));
+				final IUVCService service = mParent.getService();
+				if (service != null) {
+					try {
+						service.setExposure(mServiceId, exposure);
+					} catch (final RemoteException e) {
+						if (DEBUG) Log.e(TAG_CAMERA, "setExposure:", e);
+					}
 				}
 			}
 		}

@@ -182,10 +182,8 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                     runOnUiThread {
                         showSizeList(camera.supportedSizeList.map { size -> Size(size.width, size.height) })
                     }
-                    camera.zoom
-//                    camera.powerlineFrequency = 60
-//                    camera.whiteBlance
-//                    camera.gamma
+                    // 初始化参数
+                    camera.updateCameraParams()
 //                    Timber.d("powerlineFrequency: ${camera.powerlineFrequency}")
                     camera.setFrameCallback({ buffer ->
                         Timber.d("onFrame -----------------------")
@@ -311,17 +309,14 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         binding.captureButton?.setOnClickListener(mOnClickListener)
 
         binding.btnSetExposure.setOnClickListener {
-//            mUVCCamera?.exposureMode = UVCCamera.CTRL_AE_ABS
-//            updateExposure()
-            mUVCCamera?.autoWhiteBlance = false
+            mUVCCamera?.exposureMode = UVCCamera.EXPOSURE_MODE_AUTO_ON
+            updateExposure()
+//            mUVCCamera?.autoWhiteBlance = false
         }
 
         binding.sbExposure.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                mUVCCamera?.exposure = progress
-//                updateExposure()
                 Timber.d("set progress: $progress")
-                mUVCCamera?.whiteBlance = progress
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -329,7 +324,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
-
+//                mUVCCamera?.whiteBlance = seekBar?.progress ?: 0
+                mUVCCamera?.exposure = seekBar?.progress ?: 0
+                updateExposure()
             }
         })
 

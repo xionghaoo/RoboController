@@ -39,4 +39,7 @@ public interface ICameraClient {
 	public void stopRecording();
 	public boolean isRecording();
 	public void captureStill(String path);
+	public void setExposureMode(int mode);
+	public void setExposure(int exposure);
+	public int getExposure();
 }

@@ -99,6 +99,10 @@ class UsbCameraFragment : BaseFragment() {
         override fun onMarking(index: Int, code: Int) {
             Timber.d("onMarking: $index, $code")
         }
+
+        override fun onFpsChange(fps: Int, fpsHandle: Int) {
+
+        }
     }
 
     private val mOnClickListener =

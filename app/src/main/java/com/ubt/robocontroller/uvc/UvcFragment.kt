@@ -1,5 +1,6 @@
 package com.ubt.robocontroller.uvc
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbDevice
@@ -29,6 +30,7 @@ class UvcFragment : BaseFragment() {
     private lateinit var binding: FragmentUvcBinding
     private var mUSBMonitor: USBMonitor? = null
     private var mCameraClient: ICameraClient? = null
+    private var listener: OnFragmentActionListener? = null
 
     private val pid: Int by lazy { arguments?.getInt(ARG_PID) ?: 0 }
 
@@ -71,6 +73,7 @@ class UvcFragment : BaseFragment() {
 
     private val mCameraListener: ICameraClientCallback = object : ICameraClientCallback {
         override fun onConnect() {
+            Timber.d("mCameraListener -> onConnect: add surface")
             mCameraClient!!.addSurface(binding.cameraView.surface, false)
 //            mCameraClient!!.addSurface(binding.cameraViewSub!!.holder.surface, false)
 //            isSubView = true
@@ -90,8 +93,24 @@ class UvcFragment : BaseFragment() {
         }
 
         override fun onMarking(index: Int, code: Int) {
-            Timber.d("onMarking: $index, $code")
+            listener?.onMarking(index, code)
         }
+
+        override fun onFpsChange(fps: Int, fpsHandle: Int) {
+            listener?.onFpsChange(fps, fpsHandle)
+        }
+    }
+
+    override fun onAttach(activity: Activity?) {
+        super.onAttach(activity)
+        if (activity is OnFragmentActionListener) {
+            listener = activity
+        }
+    }
+
+    override fun onDetach() {
+        listener = null
+        super.onDetach()
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -170,6 +189,27 @@ class UvcFragment : BaseFragment() {
 //            mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
 //            mCameraClient!!.connect()
 //        }
+    }
+
+    fun setExposureMode(mode: Int) {
+        mCameraClient?.setExposureMode(mode);
+    }
+
+    fun setExposure(exposure: Int) {
+        mCameraClient?.exposure = exposure
+    }
+
+    fun getExposure(): Int {
+        return mCameraClient?.exposure ?: -1
+    }
+
+    fun addSurface() {
+        mCameraClient?.addSurface(binding.cameraView.surface, false)
+    }
+
+    interface OnFragmentActionListener {
+        fun onMarking(index: Int, code: Int)
+        fun onFpsChange(fps: Int, fpsHandle: Int)
     }
 
     companion object {

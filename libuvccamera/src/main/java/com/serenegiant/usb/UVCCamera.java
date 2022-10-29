@@ -113,6 +113,9 @@ public class UVCCamera {
 	public static final int STATUS_ATTRIBUTE_FAILURE_CHANGE = 0x02;
 	public static final int STATUS_ATTRIBUTE_UNKNOWN = 0xff;
 
+	public static final int EXPOSURE_MODE_AUTO_ON = 8;
+	public static final int EXPOSURE_MODE_AUTO_OFF = 1;
+
 	private static boolean isLoaded;
 	static {
 		if (!isLoaded) {
@@ -927,17 +930,17 @@ public class UVCCamera {
     	    	if (DEBUG) {
 					dumpControls(mControlSupports);
 					dumpProc(mProcSupports);
-					Log.v(TAG, String.format("Brightness:min=%d,max=%d,def=%d", mBrightnessMin, mBrightnessMax, mBrightnessDef));
-					Log.v(TAG, String.format("Contrast:min=%d,max=%d,def=%d", mContrastMin, mContrastMax, mContrastDef));
-					Log.v(TAG, String.format("Sharpness:min=%d,max=%d,def=%d", mSharpnessMin, mSharpnessMax, mSharpnessDef));
-					Log.v(TAG, String.format("Gain:min=%d,max=%d,def=%d", mGainMin, mGainMax, mGainDef));
-					Log.v(TAG, String.format("Gamma:min=%d,max=%d,def=%d", mGammaMin, mGammaMax, mGammaDef));
-					Log.v(TAG, String.format("Saturation:min=%d,max=%d,def=%d", mSaturationMin, mSaturationMax, mSaturationDef));
-					Log.v(TAG, String.format("Hue:min=%d,max=%d,def=%d", mHueMin, mHueMax, mHueDef));
-					Log.v(TAG, String.format("Zoom:min=%d,max=%d,def=%d", mZoomMin, mZoomMax, mZoomDef));
-					Log.v(TAG, String.format("WhiteBlance:min=%d,max=%d,def=%d", mWhiteBlanceMin, mWhiteBlanceMax, mWhiteBlanceDef));
-					Log.v(TAG, String.format("Focus:min=%d,max=%d,def=%d", mFocusMin, mFocusMax, mFocusDef));
-					Log.v(TAG, String.format("Expouse:min=%d,max=%d,def=%d", mExposureMin, mExposureMax, mExposureDef));
+					Log.d(TAG, String.format("Brightness:min=%d,max=%d,def=%d", mBrightnessMin, mBrightnessMax, mBrightnessDef));
+					Log.d(TAG, String.format("Contrast:min=%d,max=%d,def=%d", mContrastMin, mContrastMax, mContrastDef));
+					Log.d(TAG, String.format("Sharpness:min=%d,max=%d,def=%d", mSharpnessMin, mSharpnessMax, mSharpnessDef));
+					Log.d(TAG, String.format("Gain:min=%d,max=%d,def=%d", mGainMin, mGainMax, mGainDef));
+					Log.d(TAG, String.format("Gamma:min=%d,max=%d,def=%d", mGammaMin, mGammaMax, mGammaDef));
+					Log.d(TAG, String.format("Saturation:min=%d,max=%d,def=%d", mSaturationMin, mSaturationMax, mSaturationDef));
+					Log.d(TAG, String.format("Hue:min=%d,max=%d,def=%d", mHueMin, mHueMax, mHueDef));
+					Log.d(TAG, String.format("Zoom:min=%d,max=%d,def=%d", mZoomMin, mZoomMax, mZoomDef));
+					Log.d(TAG, String.format("WhiteBlance:min=%d,max=%d,def=%d", mWhiteBlanceMin, mWhiteBlanceMax, mWhiteBlanceDef));
+					Log.d(TAG, String.format("Focus:min=%d,max=%d,def=%d", mFocusMin, mFocusMax, mFocusDef));
+					Log.d(TAG, String.format("Exposure:min=%d,max=%d,def=%d", mExposureMin, mExposureMax, mExposureDef));
 				}
 			}
     	} else {
@@ -1071,7 +1074,7 @@ public class UVCCamera {
 	public void setExposureMode(int mode) {
 		if (mCtrlBlock != null) {
 			Log.d(TAG, "setExposureMode: " + mode);
-//			nativeUpdateExposureLimit(mNativePtr);
+			nativeUpdateExposureLimit(mNativePtr);
 			nativeSetExposureMode(mNativePtr, mode);
 		}
 	}
@@ -1088,7 +1091,7 @@ public class UVCCamera {
 	public void setExposure(int exposure) {
 		if (mCtrlBlock != null) {
 			if (mNativePtr != 0) {
-				Log.d(TAG, "setExposure: " + exposure + ", " + mExposureMin + ", " + mExposureMax);
+				Log.d(TAG, "setExposure: " + exposure + ", " + mExposureMin + ", " + mExposureMax + ", " + mExposureDef);
 				nativeUpdateExposureLimit(mNativePtr);
 				final float range = Math.abs(mExposureMax - mExposureMin);
 				if (range > 0) {
@@ -1100,12 +1103,13 @@ public class UVCCamera {
 	}
 
 	public int getExposure(int exposure_abs) {
+		Log.d(TAG, "getExposure_abs: " + exposure_abs);
 		int result = 0;
 		if (mNativePtr != 0) {
 			nativeUpdateExposureLimit(mNativePtr);
 			final float range = Math.abs(mExposureMax - mExposureMin);
 			if (range > 0) {
-				result = (int)((exposure_abs - mWhiteBlanceMin) * 100.f / range);
+				result = (int)((exposure_abs - mExposureMin) * 100.f / range);
 			}
 		}
 		return result;
