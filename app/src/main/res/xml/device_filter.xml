@@ -24,7 +24,7 @@
   -->
 
 <usb>
-	<usb-device vendor-id="2981" product-id="27648"/>
-<!--	<usb-device vendor-id="1443" product-id="37424"/>-->
+<!--	<usb-device vendor-id="2981" product-id="27648"/> 720p-->
+	<usb-device vendor-id="1443" product-id="37424"/>
 <!--	<usb-device class="239" subclass="2"/>	&lt;!&ndash; all device of UVC &ndash;&gt;-->
 </usb>

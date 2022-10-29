@@ -66,9 +66,10 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 
         private const val CAMERA_WIDTH = 640
         private const val CAMERA_HEIGHT = 480
+        private const val FIX_FPS = 60
 
-        private const val FPS_MIN = 30
-        private const val FPS_MAX = 30
+        private const val FPS_MIN = FIX_FPS
+        private const val FPS_MAX = FIX_FPS
         private const val FACTOR = 1f
 
         private const val REQUEST_CODE_ALL_PERMISSION = 1
@@ -179,6 +180,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                     runOnUiThread {
                         showSizeList(camera.supportedSizeList.map { size -> Size(size.width, size.height) })
                     }
+                    camera.zoom
 //                    camera.powerlineFrequency = 60
 //                    camera.whiteBlance
 //                    camera.gamma
@@ -190,7 +192,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         // 计算处理前的帧数
                         if (lastFrameTime == 0L) lastFrameTime = System.currentTimeMillis()
                         frameCount ++
-                        if (frameCount >= 30) {
+                        if (frameCount >= FIX_FPS) {
                             val curTime = System.currentTimeMillis()
                             fps = (frameCount.toFloat() / (curTime - lastFrameTime) * 1000).roundToInt()
                             frameCount = 0
@@ -210,7 +212,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         // -----------------------------
                         // 计算处理后的帧数
                         frameCountHandle ++
-                        if (frameCountHandle >= 30) {
+                        if (frameCountHandle >= FIX_FPS) {
                             val curTime = System.currentTimeMillis()
                             fpsHandle = (frameCountHandle.toFloat() / (curTime - lastHandleTime) * 1000).roundToInt()
                             frameCountHandle = 0
@@ -330,7 +332,6 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
             }
             .setNegativeButton("取消", null)
             .show()
-
     }
 
 //    override fun onStop() {

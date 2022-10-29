@@ -1065,6 +1065,19 @@ public class UVCCamera {
     		nativeSetCaptureDisplay(mNativePtr, null);
     	}
     }
+
+	public void setExposureMode(int mode) {
+		if (mCtrlBlock != null) {
+			nativeSetExposureMode(mNativePtr, mode);
+		}
+	}
+
+	public void setExposure(int exposure) {
+		if (mCtrlBlock != null) {
+			nativeSetExposure(mNativePtr, exposure);
+		}
+	}
+
     private static final native int nativeSetCaptureDisplay(final long id_camera, final Surface surface);
 
     private static final native long nativeGetCtrlSupports(final long id_camera);
