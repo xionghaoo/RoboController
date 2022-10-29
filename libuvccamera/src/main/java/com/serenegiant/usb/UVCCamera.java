@@ -922,6 +922,7 @@ public class UVCCamera {
 	    	    	nativeUpdateZoomLimit(mNativePtr);
 	    	    	nativeUpdateWhiteBlanceLimit(mNativePtr);
 	    	    	nativeUpdateFocusLimit(mNativePtr);
+					nativeUpdateExposureLimit(mNativePtr);
     	    	}
     	    	if (DEBUG) {
 					dumpControls(mControlSupports);
@@ -936,6 +937,7 @@ public class UVCCamera {
 					Log.v(TAG, String.format("Zoom:min=%d,max=%d,def=%d", mZoomMin, mZoomMax, mZoomDef));
 					Log.v(TAG, String.format("WhiteBlance:min=%d,max=%d,def=%d", mWhiteBlanceMin, mWhiteBlanceMax, mWhiteBlanceDef));
 					Log.v(TAG, String.format("Focus:min=%d,max=%d,def=%d", mFocusMin, mFocusMax, mFocusDef));
+					Log.v(TAG, String.format("Expouse:min=%d,max=%d,def=%d", mExposureMin, mExposureMax, mExposureDef));
 				}
 			}
     	} else {
@@ -1068,14 +1070,52 @@ public class UVCCamera {
 
 	public void setExposureMode(int mode) {
 		if (mCtrlBlock != null) {
+			Log.d(TAG, "setExposureMode: " + mode);
+//			nativeUpdateExposureLimit(mNativePtr);
 			nativeSetExposureMode(mNativePtr, mode);
 		}
 	}
 
+	public int getExposureMode() {
+		int result = 0;
+		if (mNativePtr != 0) {
+			nativeUpdateExposureLimit(mNativePtr);
+			result = nativeGetExposureMode(mNativePtr);
+		}
+		return result;
+	}
+
 	public void setExposure(int exposure) {
 		if (mCtrlBlock != null) {
-			nativeSetExposure(mNativePtr, exposure);
+			if (mNativePtr != 0) {
+				Log.d(TAG, "setExposure: " + exposure + ", " + mExposureMin + ", " + mExposureMax);
+				nativeUpdateExposureLimit(mNativePtr);
+				final float range = Math.abs(mExposureMax - mExposureMin);
+				if (range > 0) {
+					nativeSetExposure(mNativePtr, (int)(exposure / 100.f * range) + mExposureMin);
+				}
+
+			}
 		}
+	}
+
+	public int getExposure(int exposure_abs) {
+		int result = 0;
+		if (mNativePtr != 0) {
+			nativeUpdateExposureLimit(mNativePtr);
+			final float range = Math.abs(mExposureMax - mExposureMin);
+			if (range > 0) {
+				result = (int)((exposure_abs - mWhiteBlanceMin) * 100.f / range);
+			}
+		}
+		return result;
+	}
+
+	public int getExposure() {
+		if (mNativePtr != 0) {
+			return getExposure(nativeGetExposure(mNativePtr));
+		}
+		return -1;
 	}
 
     private static final native int nativeSetCaptureDisplay(final long id_camera, final Surface surface);

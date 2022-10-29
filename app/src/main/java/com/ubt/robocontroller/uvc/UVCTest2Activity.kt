@@ -17,6 +17,8 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.CompoundButton
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.marginBottom
@@ -207,7 +209,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //                        CoroutineScope(Dispatchers.Main).launch {
 //                            binding.ivResult.setImageBitmap(framebuffer)
 //                        }
-                        touchManager.process(framebuffer!!)
+//                        touchManager.process(framebuffer!!)
 //                        Thread.sleep(50)
                         // -----------------------------
                         // 计算处理后的帧数
@@ -308,6 +310,35 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //        mCaptureButton = findViewById<View>(R.id.capture_button) as ImageButton
         binding.captureButton?.setOnClickListener(mOnClickListener)
 
+        binding.btnSetExposure.setOnClickListener {
+//            mUVCCamera?.exposureMode = UVCCamera.CTRL_AE_ABS
+//            updateExposure()
+            mUVCCamera?.autoWhiteBlance = false
+        }
+
+        binding.sbExposure.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+//                mUVCCamera?.exposure = progress
+//                updateExposure()
+                Timber.d("set progress: $progress")
+                mUVCCamera?.whiteBlance = progress
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+            }
+        })
+
+    }
+
+    private fun updateExposure() {
+        val mode = mUVCCamera?.exposureMode
+        val exposure = mUVCCamera?.exposure
+        binding.tvExposure.text = "曝光模式：$mode, 曝光值：$exposure"
     }
 
     override fun onStart() {

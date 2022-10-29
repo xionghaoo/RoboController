@@ -121,6 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
+            tools:text="fps"
             app:layout_constraintStart_toEndOf="@+id/v_mark_0"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -129,8 +130,37 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            tools:text="fps"
             app:layout_constraintStart_toStartOf="@+id/tv_fps"
             app:layout_constraintTop_toBottomOf="@+id/tv_fps" />
+
+        <TextView
+            android:id="@+id/tv_exposure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            tools:text="曝光: "
+            app:layout_constraintStart_toStartOf="@+id/tv_fps_handle"
+            app:layout_constraintTop_toBottomOf="@+id/tv_fps_handle" />
+
+        <Button
+            android:id="@+id/btn_set_exposure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置曝光"
+            android:layout_marginStart="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_exposure"
+            app:layout_constraintStart_toEndOf="@+id/tv_exposure"
+            app:layout_constraintTop_toTopOf="@+id/tv_exposure" />
+
+        <SeekBar
+            android:id="@+id/sb_exposure"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_set_exposure"
+            app:layout_constraintStart_toEndOf="@+id/btn_set_exposure"
+            app:layout_constraintTop_toTopOf="@+id/btn_set_exposure" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
