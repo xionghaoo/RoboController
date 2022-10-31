@@ -40,6 +40,7 @@ import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import xh.zero.core.replaceFragment
 import xh.zero.core.utils.SystemUtil
+import xh.zero.core.utils.ToastUtil
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -122,13 +123,37 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         Timber.d("onNewIntent")
-        if (fragment.isAdded) {
-            fragment.addSurface()
-        }
+//        if (fragment.isAdded) {
+//            fragment.addSurface()
+//        }
     }
 
     override fun onMarking(index: Int, code: Int) {
         Timber.d("onMarking: $index, $code")
+
+        runOnUiThread {
+            binding.btnLog.text = "onMarking: index=$index, code=$code"
+
+            when(code) {
+                1600 -> {
+                    when(currentMarkIndex) {
+                        0 -> binding.vMark0.marking()
+                        1 -> binding.vMark1.marking()
+                        2 -> binding.vMark2.marking()
+                        3 -> binding.vMark3.marking()
+                    }
+                }
+                1 -> {
+                    if (currentMarkIndex == 3) {
+                        binding.tvMarkInfo.text = "标定完成"
+                        touchManager.setCurrentMode(2)
+                    } else {
+                        touchManager.setMarkIndex(++currentMarkIndex)
+                        binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
+                    }
+                }
+            }
+        }
     }
 
     override fun onFpsChange(fps: Int, fpsHandle: Int) {
@@ -208,30 +233,42 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         }
 
         // 设置曝光参数
-        binding.btnSetExposure.setOnClickListener {
+        binding.btnSetExposureMode.setOnClickListener {
             fragment.setExposureMode(UVCCamera.EXPOSURE_MODE_AUTO_OFF)
             updateExposure()
+            ToastUtil.show(this, "设置为手动曝光模式")
         }
 
-        binding.sbExposure.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                Timber.d("set progress: $progress")
-            }
+//        binding.sbExposure.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+//                Timber.d("set progress: $progress")
+//            }
+//
+//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+//
+//            }
+//
+//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+//                fragment.setExposure(seekBar?.progress ?: 0)
+//                CoroutineScope(Dispatchers.Default).launch {
+//                    delay(200)
+//                    withContext(Dispatchers.Main) {
+//                        updateExposure()
+//                    }
+//                }
+//            }
+//        })
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                fragment.setExposure(seekBar?.progress ?: 0)
-                CoroutineScope(Dispatchers.Default).launch {
-                    delay(200)
-                    withContext(Dispatchers.Main) {
-                        updateExposure()
-                    }
+        binding.btnSetExposureValue.setOnClickListener {
+            val percent = binding.edtExposure.text.toString().toInt()
+            fragment.setExposure(percent)
+            CoroutineScope(Dispatchers.Default).launch {
+                delay(200)
+                withContext(Dispatchers.Main) {
+                    updateExposure()
                 }
             }
-        })
+        }
 
 //        cameraFragment.setExposure(1)
 

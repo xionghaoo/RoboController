@@ -120,10 +120,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            tools:text="fps"
             app:layout_constraintStart_toEndOf="@+id/v_mark_0"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/v_mark_0"
+            tools:text="fps" />
 
         <TextView
             android:id="@+id/tv_fps_handle"
@@ -144,24 +143,35 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_fps_handle" />
 
         <Button
-            android:id="@+id/btn_set_exposure"
+            android:id="@+id/btn_set_exposure_mode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="设置曝光"
+            android:text="设置手动曝光模式"
             android:layout_marginStart="20dp"
             app:layout_constraintBottom_toBottomOf="@+id/tv_exposure"
             app:layout_constraintStart_toEndOf="@+id/tv_exposure"
             app:layout_constraintTop_toTopOf="@+id/tv_exposure" />
 
-        <SeekBar
-            android:id="@+id/sb_exposure"
-            android:layout_width="200dp"
+        <EditText
+            android:id="@+id/edt_exposure"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:max="100"
-            app:layout_constraintBottom_toBottomOf="@+id/btn_set_exposure"
-            app:layout_constraintStart_toEndOf="@+id/btn_set_exposure"
-            app:layout_constraintTop_toTopOf="@+id/btn_set_exposure" />
+            android:ems="10"
+            android:inputType="number"
+            android:layout_marginStart="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_set_exposure_mode"
+            app:layout_constraintStart_toEndOf="@+id/btn_set_exposure_mode"
+            app:layout_constraintTop_toTopOf="@+id/btn_set_exposure_mode" />
+
+        <Button
+            android:id="@+id/btn_set_exposure_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置曝光值"
+            android:layout_marginStart="10dp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_set_exposure_mode"
+            app:layout_constraintStart_toEndOf="@+id/edt_exposure"
+            app:layout_constraintTop_toTopOf="@+id/btn_set_exposure_mode" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -37,16 +37,15 @@ import com.ubt.robocontroller.Config
 import com.ubt.robocontroller.R
 import com.ubt.robocontroller.TouchManager
 import com.ubt.robocontroller.databinding.ActivityUvcTest22Binding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
 import xh.zero.core.utils.SystemUtil
+import xh.zero.core.utils.ToastUtil
 import java.io.File
 import java.io.IOException
+import java.lang.Runnable
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -186,7 +185,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                     camera.updateCameraParams()
 //                    Timber.d("powerlineFrequency: ${camera.powerlineFrequency}")
                     camera.setFrameCallback({ buffer ->
-                        Timber.d("onFrame -----------------------")
+//                        Timber.d("onFrame -----------------------")
                         if (lastHandleTime == 0L) lastHandleTime = System.currentTimeMillis()
 
                         // 计算处理前的帧数
@@ -308,27 +307,33 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //        mCaptureButton = findViewById<View>(R.id.capture_button) as ImageButton
         binding.captureButton?.setOnClickListener(mOnClickListener)
 
-        binding.btnSetExposure.setOnClickListener {
-            mUVCCamera?.exposureMode = UVCCamera.EXPOSURE_MODE_AUTO_ON
+        binding.btnSetExposureMode.setOnClickListener {
+            mUVCCamera?.exposureMode = UVCCamera.EXPOSURE_MODE_AUTO_OFF
             updateExposure()
-//            mUVCCamera?.autoWhiteBlance = false
+            ToastUtil.show(this, "设置为手动曝光模式")
         }
 
-        binding.sbExposure.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                Timber.d("set progress: $progress")
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//                mUVCCamera?.whiteBlance = seekBar?.progress ?: 0
-                mUVCCamera?.exposure = seekBar?.progress ?: 0
-                updateExposure()
-            }
-        })
+//        binding.sbExposure.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+//                Timber.d("set progress: $progress")
+//            }
+//
+//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+//
+//            }
+//
+//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+////                mUVCCamera?.whiteBlance = seekBar?.progress ?: 0
+//                mUVCCamera?.exposure = seekBar?.progress ?: 0
+//                updateExposure()
+//            }
+//        })
+        binding.btnSetExposureValue.setOnClickListener {
+            val percent = binding.edtExposure.text.toString().toInt()
+//            fragment.setExposure(percent)
+            mUVCCamera?.exposure = percent
+            updateExposure()
+        }
 
     }
 

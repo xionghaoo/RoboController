@@ -1092,11 +1092,20 @@ public class UVCCamera {
 		if (mCtrlBlock != null) {
 			if (mNativePtr != 0) {
 				Log.d(TAG, "setExposure: " + exposure + ", " + mExposureMin + ", " + mExposureMax + ", " + mExposureDef);
-				nativeUpdateExposureLimit(mNativePtr);
-				final float range = Math.abs(mExposureMax - mExposureMin);
-				if (range > 0) {
-					nativeSetExposure(mNativePtr, (int)(exposure / 100.f * range) + mExposureMin);
+//				nativeUpdateExposureLimit(mNativePtr);
+//				final float range = Math.abs(mExposureMax - mExposureMin);
+//				if (range > 0) {
+//					nativeSetExposure(mNativePtr, (int)(exposure / 100.f * range) + mExposureMin);
+//				}
+				int value = exposure;
+				if (exposure < mExposureMin) {
+					value = mExposureMin;
 				}
+				if (exposure > mExposureMax) {
+					value = mExposureMax;
+				}
+				nativeSetExposure(mNativePtr, value);
+
 
 			}
 		}
@@ -1117,7 +1126,9 @@ public class UVCCamera {
 
 	public int getExposure() {
 		if (mNativePtr != 0) {
-			return getExposure(nativeGetExposure(mNativePtr));
+//			return getExposure(nativeGetExposure(mNativePtr));
+			nativeUpdateExposureLimit(mNativePtr);
+			return nativeGetExposure(mNativePtr);
 		}
 		return -1;
 	}
