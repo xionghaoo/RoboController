@@ -206,7 +206,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //                        CoroutineScope(Dispatchers.Main).launch {
 //                            binding.ivResult.setImageBitmap(framebuffer)
 //                        }
-//                        touchManager.process(framebuffer!!)
+                        touchManager.process(framebuffer!!)
 //                        Thread.sleep(50)
                         // -----------------------------
                         // 计算处理后的帧数
