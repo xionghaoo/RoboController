@@ -32,10 +32,7 @@ import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener
 import com.serenegiant.usb.USBMonitor.UsbControlBlock
 import com.serenegiant.usb.UVCCamera
-import com.ubt.robocontroller.CameraXPreviewFragment
-import com.ubt.robocontroller.Config
-import com.ubt.robocontroller.R
-import com.ubt.robocontroller.TouchManager
+import com.ubt.robocontroller.*
 import com.ubt.robocontroller.databinding.ActivityUvcTest22Binding
 import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
@@ -554,14 +551,34 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(mUsbPermissionActionReceiver, filter)
 
+        requestUsbPermission()
+
+//        val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
+//
+//        mUsbManager?.deviceList?.values?.forEach { usbDevice ->
+////            usbDevice.productId
+//            if (mUsbManager!!.hasPermission(usbDevice)) {
+//                afterGetUsbPermission(usbDevice)
+//            } else {
+//                mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
+//            }
+//        }
+    }
+
+    private fun requestUsbPermission() {
         val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
 
+        val filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter)
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
-//            usbDevice.productId
-            if (mUsbManager!!.hasPermission(usbDevice)) {
-                afterGetUsbPermission(usbDevice)
-            } else {
-                mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
+            filters.forEach { filiter ->
+                if (filiter.mProductId == usbDevice.productId && !filiter.isExclude) {
+                    if (mUsbManager!!.hasPermission(usbDevice)) {
+                        afterGetUsbPermission(usbDevice)
+                    } else {
+                        // 请求USB权限
+                        mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
+                    }
+                }
             }
         }
     }
@@ -577,6 +594,7 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         }
                     } else {
                         Toast.makeText(this@UVCTest2Activity, "Usb权限未授予", Toast.LENGTH_SHORT).show()
+                        requestUsbPermission()
                     }
                 }
             }

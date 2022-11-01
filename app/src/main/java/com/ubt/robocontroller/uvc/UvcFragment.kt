@@ -120,7 +120,6 @@ class UvcFragment : BaseFragment() {
             mUSBMonitor = USBMonitor(activity.applicationContext, mOnDeviceConnectListener)
             val filters = DeviceFilter.getDeviceFilters(activity, R.xml.device_filter)
             mUSBMonitor?.setDeviceFilter(filters)
-//            openUVCCamera()
         }
     }
 

@@ -42,6 +42,7 @@ import android.view.Surface;
 import androidx.core.app.NotificationCompat;
 
 import com.serenegiant.common.BaseService;
+import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
@@ -51,6 +52,8 @@ import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
 import com.ubt.robocontroller.IUVCSlaveService;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.UVCActivity;
+
+import java.util.List;
 
 public class UVCService extends BaseService {
 	private static final boolean DEBUG = true;
@@ -71,6 +74,8 @@ public class UVCService extends BaseService {
 		if (DEBUG) Log.d(TAG, "onCreate:");
 		if (mUSBMonitor == null) {
 			mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
+			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
+			mUSBMonitor.setDeviceFilter(filters);
 			mUSBMonitor.register();
 		}
 		mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);

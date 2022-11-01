@@ -8,20 +8,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.ImageFormat
 import android.graphics.PointF
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.view.View
-import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -29,17 +24,14 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
 import com.serenegiant.common.BaseActivity
+import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.UVCCamera
-import com.ubt.robocontroller.databinding.ActivityMainBinding
 import com.ubt.robocontroller.databinding.ActivityUvcactivityBinding
-import com.ubt.robocontroller.uvc.UsbCameraFragment
 import com.ubt.robocontroller.uvc.UvcFragment
 import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
-import xh.zero.core.replaceFragment
-import xh.zero.core.utils.SystemUtil
 import xh.zero.core.utils.ToastUtil
 import java.io.File
 import java.text.SimpleDateFormat
@@ -166,11 +158,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     private fun initial(pid: Int) {
-        fragment = UvcFragment.newInstance(pid)
-        fragmentManager.beginTransaction()
-            .add(R.id.fragment_container, fragment)
-            .commit()
-
         val points = arrayListOf<PointF>(
             PointF(w * 0.052f, h * 0.092f),
             PointF(w * 0.052f, h * 0.907f),
@@ -239,26 +226,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             ToastUtil.show(this, "设置为手动曝光模式")
         }
 
-//        binding.sbExposure.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                Timber.d("set progress: $progress")
-//            }
-//
-//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//
-//            }
-//
-//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//                fragment.setExposure(seekBar?.progress ?: 0)
-//                CoroutineScope(Dispatchers.Default).launch {
-//                    delay(200)
-//                    withContext(Dispatchers.Main) {
-//                        updateExposure()
-//                    }
-//                }
-//            }
-//        })
-
         binding.btnSetExposureValue.setOnClickListener {
             val percent = binding.edtExposure.text.toString().toInt()
             fragment.setExposure(percent)
@@ -285,6 +252,11 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 //            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
 //        }
 //        binding.tvCameraInfo.text = sb.toString()
+
+        fragment = UvcFragment.newInstance(pid)
+        fragmentManager.beginTransaction()
+            .add(R.id.fragment_container, fragment)
+            .commit()
     }
 
     private fun updateExposure() {
@@ -338,14 +310,23 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         val filter = IntentFilter(ACTION_USB_PERMISSION)
         registerReceiver(mUsbPermissionActionReceiver, filter)
 
+        requestUsbPermission()
+    }
+
+    private fun requestUsbPermission() {
         val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
 
+        val filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter)
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
-            if (mUsbManager!!.hasPermission(usbDevice)) {
-                afterGetUsbPermission(usbDevice)
-            } else {
-                // 请求USB权限
-                mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
+            filters.forEach { filiter ->
+                if (filiter.mProductId == usbDevice.productId && !filiter.isExclude) {
+                    if (mUsbManager!!.hasPermission(usbDevice)) {
+                        afterGetUsbPermission(usbDevice)
+                    } else {
+                        // 请求USB权限
+                        mUsbManager!!.requestPermission(usbDevice, mPermissionIntent)
+                    }
+                }
             }
         }
     }
@@ -361,6 +342,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                         }
                     } else {
                         Toast.makeText(this@UVCActivity, "Usb权限未授予", Toast.LENGTH_SHORT).show()
+                        requestUsbPermission()
                     }
                 }
             }

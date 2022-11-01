@@ -393,7 +393,7 @@ public final class CameraServer extends Handler {
 		private int mEncoderSurfaceId;
 		private int mFrameWidth, mFrameHeight;
 
-		private static final int FIX_FPS = 30;
+		private static final int FIX_FPS = 60;
 		private static final int FPS_MIN = FIX_FPS;
 		private static final int FPS_MAX = FIX_FPS;
 		private static final int FACTOR = 1;
@@ -472,10 +472,9 @@ public final class CameraServer extends Handler {
 			handleClose();
 			synchronized (mSync) {
 				mUVCCamera = new UVCCamera();
-				Log.d(TAG, "open product id: " + mCtrlBlock.getDevice().getProductId());
+				Log.d(TAG, "open product id: " + mCtrlBlock.getDevice().getProductId() + "， " + mCtrlBlock.getDevice().getDeviceName());
 //				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
-				mUVCCamera.updateCameraParams();
 				if (DEBUG) Log.i(TAG, "supportedSize:" + mUVCCamera.getSupportedSize());
 			}
 			mHandler.processOnCameraStart();
@@ -515,11 +514,14 @@ public final class CameraServer extends Handler {
 					}
 				}
 				if (mUVCCamera == null) return;
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				mFrameWidth = width;
 				mFrameHeight = height;
+				Log.d(TAG, "handleStartPreview: " + surface);
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
+				mUVCCamera.updateCameraParams();
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
+				Log.d(TAG, "end start preview");
 			}
 		}
 
@@ -659,7 +661,7 @@ public final class CameraServer extends Handler {
 			// 业务处理
 			try {
 				if (framebuffer == null) {
-					framebuffer = Bitmap.createBitmap(DEFAULT_WIDTH, DEFAULT_HEIGHT, Bitmap.Config.RGB_565);
+					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
 				}
 				framebuffer.copyPixelsFromBuffer(frame);
 			} catch (Exception e) {
@@ -668,7 +670,8 @@ public final class CameraServer extends Handler {
 
 //				framebuffer.copyPixelsFromBuffer(frame);
 //////				// 处理帧
-//				touchManager.process(framebuffer);
+			Log.d(TAG, "handle frame: --------------");
+			touchManager.process(framebuffer);
 //				frame.clear();
 			// 处理后帧率
 			frameCountHandle ++;

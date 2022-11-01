@@ -221,6 +221,7 @@ Java_com_ubt_robocontroller_TouchManager_setCurrentMode(JNIEnv *env, jobject thi
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobject image) {
+    LOGCATD("TouchManager_process: %i", markMode);
     cv::Mat frame;
     bitmap_to_mat(env, image, frame);
     cv::Mat dst;
