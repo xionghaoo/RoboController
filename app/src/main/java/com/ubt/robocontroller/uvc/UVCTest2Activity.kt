@@ -41,9 +41,11 @@ import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import xh.zero.camera.BaseCameraFragment
 import xh.zero.core.utils.SystemUtil
 import xh.zero.core.utils.ToastUtil
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.Runnable
 import java.text.SimpleDateFormat
@@ -313,26 +315,15 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
             ToastUtil.show(this, "设置为手动曝光模式")
         }
 
-//        binding.sbExposure.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                Timber.d("set progress: $progress")
-//            }
-//
-//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//
-//            }
-//
-//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-////                mUVCCamera?.whiteBlance = seekBar?.progress ?: 0
-//                mUVCCamera?.exposure = seekBar?.progress ?: 0
-//                updateExposure()
-//            }
-//        })
         binding.btnSetExposureValue.setOnClickListener {
             val percent = binding.edtExposure.text.toString().toInt()
 //            fragment.setExposure(percent)
             mUVCCamera?.exposure = percent
             updateExposure()
+        }
+
+        binding.btnSaveImage.setOnClickListener {
+            saveBitmapToFile(framebuffer)
         }
 
     }
@@ -733,6 +724,24 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
 //            }
 //            return@setOnTouchListener true
 //        }
+    }
+
+    private fun saveBitmapToFile(bitmap: Bitmap?) {
+        if (bitmap == null) return
+        CoroutineScope(Dispatchers.IO).launch {
+            val file = BaseCameraFragment.createFile(this@UVCTest2Activity, "jpg")
+            val out = FileOutputStream(file)
+            try {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                out.flush()
+                out.close()
+                withContext(Dispatchers.Main) {
+                    ToastUtil.show(this@UVCTest2Activity, "图片已保存")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
 

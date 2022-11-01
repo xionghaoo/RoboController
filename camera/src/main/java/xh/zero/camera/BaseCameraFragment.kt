@@ -97,7 +97,7 @@ abstract class BaseCameraFragment<V: ViewBinding> : Fragment() {
 //            val pictureDir = File(rootDir, "roboland")
 //            if (!pictureDir.exists()) pictureDir.mkdir()
 //            return File(Environment.getExternalStorageDirectory(), "IMG_${sdf.format(Date())}.$extension")
-            val dir = StorageUtil.getDownloadDirectory(context.applicationContext, "xh_camera")
+            val dir = StorageUtil.getDownloadDirectory(context.applicationContext, "touch_service")
             return File(dir, "IMG_${sdf.format(Date())}.$extension")
         }
     }

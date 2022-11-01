@@ -472,6 +472,7 @@ public final class CameraServer extends Handler {
 			handleClose();
 			synchronized (mSync) {
 				mUVCCamera = new UVCCamera();
+				Log.d(TAG, "open product id: " + mCtrlBlock.getDevice().getProductId());
 //				Timber.d("fps: %s", mUVCCamera.getPowerlineFrequency());
 				mUVCCamera.open(mCtrlBlock);
 				mUVCCamera.updateCameraParams();

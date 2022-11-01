@@ -142,7 +142,6 @@ class UvcFragment : BaseFragment() {
     override fun onResume() {
         super.onResume()
         mUSBMonitor?.register()
-//        mCameraClient?.addSurface(binding.cameraView.surface, false)
     }
 
     override fun onPause() {
