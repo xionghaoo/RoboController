@@ -3,6 +3,7 @@ package com.ubt.robocontroller.uvc
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.PointF
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
@@ -33,6 +34,9 @@ class UvcFragment : BaseFragment() {
     private var listener: OnFragmentActionListener? = null
 
     private val pid: Int by lazy { arguments?.getInt(ARG_PID) ?: 0 }
+    private val points: ArrayList<PointF> by lazy {
+        arguments?.getParcelableArrayList(ARG_POINTS) ?: arrayListOf()
+    }
 
     private val mOnDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
         object : USBMonitor.OnDeviceConnectListener {
@@ -75,15 +79,11 @@ class UvcFragment : BaseFragment() {
         override fun onConnect() {
             Timber.d("mCameraListener -> onConnect: add surface")
             mCameraClient!!.addSurface(binding.cameraView.surface, false)
-//            mCameraClient!!.addSurface(binding.cameraViewSub!!.holder.surface, false)
-//            isSubView = true
-//            enableButtons(true)
-//            setPreviewButton(true)
             // start UVCService
             val intent = Intent(activity, UVCService::class.java)
             activity.startService(intent)
             activity?.runOnUiThread {
-                ToastUtil.show(context, "启动服务2")
+                ToastUtil.show(context, "启动服务")
             }
         }
 
@@ -175,8 +175,7 @@ class UvcFragment : BaseFragment() {
         list.forEach { device ->
             if (device.productId == pid) {
                 ToastUtil.show(context, "打开相机")
-
-                if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
+                if (mCameraClient == null) mCameraClient = CameraClient(activity, points, mCameraListener)
                 mCameraClient!!.select(device)
                 mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
                 mCameraClient!!.connect()
@@ -206,6 +205,15 @@ class UvcFragment : BaseFragment() {
         mCameraClient?.addSurface(binding.cameraView.surface, false)
     }
 
+//    fun setMarkIndex(index: Int) {
+//        mCameraClient?.setMarkIndex(index)
+//    }
+
+    fun stopService() {
+        val intent = Intent(activity, UVCService::class.java)
+        activity.stopService(intent)
+    }
+
     interface OnFragmentActionListener {
         fun onMarking(index: Int, code: Int)
         fun onFpsChange(fps: Int, fpsHandle: Int)
@@ -218,10 +226,12 @@ class UvcFragment : BaseFragment() {
 //        private const val CAMERA_INDEX = 1
 
         private const val ARG_PID = "ARG_PID"
-        
-        fun newInstance(pid: Int) = UvcFragment().apply {
+        private const val ARG_POINTS = "ARG_POINTS"
+
+        fun newInstance(pid: Int, points: ArrayList<PointF>) = UvcFragment().apply {
             arguments = Bundle().apply {
                 putInt(ARG_PID, pid)
+                putParcelableArrayList(ARG_POINTS, points)
             }
         }
     }

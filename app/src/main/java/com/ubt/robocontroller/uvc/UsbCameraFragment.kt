@@ -114,7 +114,7 @@ class UsbCameraFragment : BaseFragment() {
                     val list = mUSBMonitor!!.deviceList
                     if (list.size > 0) {
                         if (mCameraClient == null) mCameraClient =
-                            CameraClient(activity, mCameraListener)
+                            CameraClient(activity, null, mCameraListener)
                         mCameraClient!!.select(list[CAMERA_INDEX])
                         mCameraClient!!.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
                         mCameraClient!!.connect()
@@ -253,7 +253,7 @@ class UsbCameraFragment : BaseFragment() {
         val list = mUSBMonitor!!.deviceList
         if (list.size > index) {
             enableButtons(false)
-            if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
+            if (mCameraClient == null) mCameraClient = CameraClient(activity, null, mCameraListener)
             mCameraClient!!.select(list[index])
             mCameraClient!!.resize(DEFAULT_WIDTH, DEFAULT_HEIGHT)
             mCameraClient!!.connect()

@@ -27,6 +27,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.PointF;
 import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.IBinder;
@@ -40,8 +41,11 @@ import android.view.Surface;
 import com.ubt.robocontroller.BuildConfig;
 import com.ubt.robocontroller.IUVCService;
 import com.ubt.robocontroller.IUVCServiceCallback;
+import com.ubt.robocontroller.uvc.service.UVCService;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -56,10 +60,12 @@ public class CameraClient implements ICameraClient {
 	protected final Object mServiceSync = new Object();
 	protected IUVCService mService;
 	protected ICameraClientCallback mListener;
+	private final ArrayList<PointF> points;
 
-	public CameraClient(final Context context, final ICameraClientCallback listener) {
+	public CameraClient(final Context context, ArrayList<PointF> points, final ICameraClientCallback listener) {
 		if (DEBUG) Log.v(TAG, "Constructor:");
 		mWeakContext = new WeakReference<Context>(context);
+		this.points = points;
 		mListener = listener;
 		mWeakHandler = new WeakReference<CameraHandler>(CameraHandler.createHandler(this));
 		doBindService();
@@ -189,6 +195,7 @@ public class CameraClient implements ICameraClient {
 				if (context != null) {
 					final Intent intent = new Intent(IUVCService.class.getName());
 					intent.setPackage(BuildConfig.APPLICATION_ID);
+					intent.putParcelableArrayListExtra(UVCService.EXTRA_POINTS, points);
 					context.bindService(intent,
 						mServiceConnection, Context.BIND_AUTO_CREATE);
 				} else

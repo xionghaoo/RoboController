@@ -32,6 +32,7 @@ import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import xh.zero.core.utils.SystemUtil
 import xh.zero.core.utils.ToastUtil
 import java.io.File
 import java.text.SimpleDateFormat
@@ -72,7 +73,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     private lateinit var binding: ActivityUvcactivityBinding
     private lateinit var fragment: UvcFragment
 
-    private val touchManager = TouchManager.instance()
+//    private val touchManager = TouchManager.instance()
     private var lastTime: Long = 0
     private var cameraId: String = "0"
     private lateinit var cameraFragment: CameraXPreviewFragment
@@ -86,7 +87,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-//        SystemUtil.toFullScreenMode(this)
+        SystemUtil.toFullScreenMode(this)
         super.onCreate(savedInstanceState)
         binding = ActivityUvcactivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -138,9 +139,10 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 1 -> {
                     if (currentMarkIndex == 3) {
                         binding.tvMarkInfo.text = "标定完成"
-                        touchManager.setCurrentMode(2)
+//                        touchManager.setCurrentMode(2)
                     } else {
-                        touchManager.setMarkIndex(++currentMarkIndex)
+//                        fragment.setMarkIndex(++currentMarkIndex)
+//                        touchManager.setMarkIndex(++currentMarkIndex)
                         binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
                     }
                 }
@@ -193,25 +195,25 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
 
         // 初始化触控程序
-        touchManager.initialTouchPanel(points, w, h)
+//        touchManager.initialTouchPanel(points, w, h)
 
-        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val f1 = File(downloadDir, "module/touchscreen/userdata/Homography.dat")
-        val f2 = File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat")
-        if (f1.exists() && f2.exists()) {
-            touchManager.setCurrentMode(2)
-        } else {
-            touchManager.setCurrentMode(1)
-        }
+//        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+//        val f1 = File(downloadDir, "module/touchscreen/userdata/Homography.dat")
+//        val f2 = File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat")
+//        if (f1.exists() && f2.exists()) {
+//            touchManager.setCurrentMode(2)
+//        } else {
+//            touchManager.setCurrentMode(1)
+//        }
 
         // 标定第一个点
-        touchManager.setMarkIndex(currentMarkIndex)
+//        touchManager.setMarkIndex(currentMarkIndex)
         binding.tvMarkInfo.text = "当前标定点：0"
 
         // 测试
         binding.btnMark.visibility = View.GONE
         binding.btnMark.setOnClickListener {
-            touchManager.setMarkIndex(0)
+//            touchManager.setMarkIndex(0)
         }
 
 //        binding.btnTest.visibility = View.GONE
@@ -253,7 +255,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 //        }
 //        binding.tvCameraInfo.text = sb.toString()
 
-        fragment = UvcFragment.newInstance(pid)
+        fragment = UvcFragment.newInstance(pid, points)
         fragmentManager.beginTransaction()
             .add(R.id.fragment_container, fragment)
             .commit()

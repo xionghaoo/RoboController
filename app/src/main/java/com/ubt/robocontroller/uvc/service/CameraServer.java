@@ -90,9 +90,15 @@ public final class CameraServer extends Handler {
 	private RendererHolder mRendererHolder;
 	private final WeakReference<CameraThread> mWeakThread;
 
-	public static CameraServer createServer(final Context context, final UsbControlBlock ctrlBlock, final int vid, final int pid) {
+	public static CameraServer createServer(
+			final Context context,
+			final UsbControlBlock ctrlBlock,
+			final int vid,
+			final int pid,
+			ArrayList<PointF> points
+	) {
 		if (DEBUG) Log.d(TAG, "createServer:");
-		final CameraThread thread = new CameraThread(context, ctrlBlock);
+		final CameraThread thread = new CameraThread(context, ctrlBlock, points);
 		thread.start();
 		return thread.getHandler();
 	}
@@ -430,8 +436,9 @@ public final class CameraServer extends Handler {
 
 		private Bitmap framebuffer;
 		private TouchManager touchManager = TouchManager.Companion.instance();
+		private int currentMarkIndex = 0;
 
-		private CameraThread(final Context context, final UsbControlBlock ctrlBlock) {
+		private CameraThread(final Context context, final UsbControlBlock ctrlBlock, ArrayList<PointF> points) {
 			super("CameraThread");
 			if (DEBUG) Log.d(TAG_THREAD, "Constructor:");
 			mWeakContext = new WeakReference<Context>(context);
@@ -439,13 +446,12 @@ public final class CameraServer extends Handler {
 			loadShutterSound(context);
 
 			// 初始化触控程序
-			ArrayList<PointF> points = new ArrayList<>();
-//			PointF p1 = new PointF(99.840004f, 99.360001f);
-//			PointF p = new PointF(99.840004f, 99.360001f);
-			points.add(new PointF(99.840004f, 99.360001f));
-			points.add(new PointF(99.840004f, 979.559998f));
-			points.add(new PointF(1820.160034f, 99.360001f));
-			points.add(new PointF(1820.160034f, 979.559998f));
+//			ArrayList<PointF> points = new ArrayList<>();
+//			points.add(new PointF(99.840004f, 99.360001f));
+//			points.add(new PointF(99.840004f, 979.559998f));
+//			points.add(new PointF(1820.160034f, 99.360001f));
+//			points.add(new PointF(1820.160034f, 979.559998f));
+			Log.d(TAG, "CameraThread: received points: " + points.size());
 			touchManager.initialTouchPanel(points, w, h);
 
 			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -461,9 +467,26 @@ public final class CameraServer extends Handler {
 			touchManager.setCallback(new TouchManager.Callback() {
 				@Override
 				public void onMarking(int index, int code) {
+					switch (code) {
+						case 1600: {
+							// 处理UI
+							break;
+						}
+						case 1: {
+							if (currentMarkIndex == 3) {
+								// 切换到执行模式
+								touchManager.setCurrentMode(2);
+							} else {
+								touchManager.setMarkIndex(++currentMarkIndex);
+							}
+							break;
+						}
+					}
 					mHandler.processOnMarking(index, code);
 				}
 			});
+
+			touchManager.setMarkIndex(currentMarkIndex);
 		}
 
 		@Override
@@ -675,6 +698,7 @@ public final class CameraServer extends Handler {
 		}; */
 
 		private final IFrameCallback mIFrameCallback = frame -> {
+			Log.d(TAG, "handle frame start: --------------");
 			// 处理前帧率
 			if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
 			if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
@@ -698,7 +722,7 @@ public final class CameraServer extends Handler {
 //				framebuffer.copyPixelsFromBuffer(frame);
 //////				// 处理帧
 			Log.d(TAG, "handle frame: --------------");
-			touchManager.process(framebuffer);
+//			touchManager.process(framebuffer);
 //				frame.clear();
 			// 处理后帧率
 			frameCountHandle ++;

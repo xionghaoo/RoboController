@@ -31,6 +31,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.PointF;
 import android.hardware.usb.UsbDevice;
 import android.os.Build;
 import android.os.IBinder;
@@ -53,16 +54,18 @@ import com.ubt.robocontroller.IUVCSlaveService;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.UVCActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UVCService extends BaseService {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "UVCService";
-
 	private static final int NOTIFICATION = R.string.app_name;
+	public static final String EXTRA_POINTS = "com.ubt.robocontroller.UVCService.EXTRA_POINTS";
 
 	private USBMonitor mUSBMonitor;
 	private NotificationManager mNotificationManager;
+	private ArrayList<PointF> points;
 
 	public UVCService() {
 		if (DEBUG) Log.d(TAG, "Constructor:");
@@ -72,14 +75,14 @@ public class UVCService extends BaseService {
 	public void onCreate() {
 		super.onCreate();
 		if (DEBUG) Log.d(TAG, "onCreate:");
-		if (mUSBMonitor == null) {
-			mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
-			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
-			mUSBMonitor.setDeviceFilter(filters);
-			mUSBMonitor.register();
-		}
 		mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		showNotification(getString(R.string.app_name));
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.d(TAG, "onStartCommand: ");
+		return START_STICKY;
 	}
 
 	@Override
@@ -100,6 +103,16 @@ public class UVCService extends BaseService {
 	@Override
 	public IBinder onBind(final Intent intent) {
 		if (DEBUG) Log.d(TAG, "onBind:" + intent);
+
+		points = intent.getParcelableArrayListExtra(EXTRA_POINTS);
+
+		if (mUSBMonitor == null) {
+			mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
+			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
+			mUSBMonitor.setDeviceFilter(filters);
+			mUSBMonitor.register();
+		}
+
 		final String action = intent != null ? intent.getAction() : null;
 		if (IUVCService.class.getName().equals(action)) {
 			Log.i(TAG, "return mBasicBinder");
@@ -153,6 +166,7 @@ public class UVCService extends BaseService {
 			String name = "robo_uvc_camera";
 			String description = "robo_uvc_camera";
 			NotificationChannel channel = new NotificationChannel("robo_uvc_camera_channel", name, NotificationManager.IMPORTANCE_DEFAULT);
+			channel.setSound(null, null);
 			channel.setDescription(description);
 			// Register the channel with the system
 			mNotificationManager.createNotificationChannel(channel);
@@ -181,7 +195,13 @@ public class UVCService extends BaseService {
 					synchronized (sServiceSync) {
 						service = sCameraServers.get(key);
 						if (service == null) {
-							service = CameraServer.createServer(UVCService.this, ctrlBlock, device.getVendorId(), device.getProductId());
+							service = CameraServer.createServer(
+									UVCService.this,
+									ctrlBlock,
+									device.getVendorId(),
+									device.getProductId(),
+									points
+							);
 							sCameraServers.append(key, service);
 						} else {
 							Log.w(TAG, "service already exist before connection");
@@ -471,7 +491,7 @@ public class UVCService extends BaseService {
 				return -1;
 			}
 		}
-	};
+};
 
 //********************************************************************************
 	private final IUVCSlaveService.Stub mSlaveBinder = new IUVCSlaveService.Stub() {
