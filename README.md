@@ -60,4 +60,10 @@ mUVCCamera.startPreview();
 ## USBMonitor
 
 + `deviceList`: 获取USB设备列表
-+ ``
+
+
+## 问题记录
+
+### 1. 打开相机后没有预览，也没有帧回调
+
+原因：帧率不匹配

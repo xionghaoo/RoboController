@@ -54,6 +54,7 @@ import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.Size;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
+import com.ubt.robocontroller.Config;
 import com.ubt.robocontroller.IUVCServiceCallback;
 import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
 import com.ubt.robocontroller.R;
@@ -404,7 +405,7 @@ public final class CameraServer extends Handler {
 		private int mEncoderSurfaceId;
 		private int mFrameWidth, mFrameHeight;
 
-		private static final int FIX_FPS = 60;
+		private static final int FIX_FPS = Config.DEFAULT_FPS;
 		private static final int FPS_MIN = FIX_FPS;
 		private static final int FPS_MAX = FIX_FPS;
 		private static final int FACTOR = 1;
@@ -698,7 +699,6 @@ public final class CameraServer extends Handler {
 		}; */
 
 		private final IFrameCallback mIFrameCallback = frame -> {
-			Log.d(TAG, "handle frame start: --------------");
 			// 处理前帧率
 			if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
 			if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
@@ -718,12 +718,9 @@ public final class CameraServer extends Handler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
-//				framebuffer.copyPixelsFromBuffer(frame);
-//////				// 处理帧
-			Log.d(TAG, "handle frame: --------------");
-//			touchManager.process(framebuffer);
-//				frame.clear();
+			// 处理帧
+			Log.d(TAG, "---------------handle frame--------------");
+			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
 			if (frameCountHandle >= FIX_FPS) {
