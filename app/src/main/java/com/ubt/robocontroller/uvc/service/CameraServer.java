@@ -27,11 +27,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.media.AudioManager;
 import android.media.MediaScannerConnection;
 import android.media.SoundPool;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -58,10 +60,13 @@ import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.TouchManager;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -404,6 +409,8 @@ public final class CameraServer extends Handler {
 		private int frameCountHandle = 0;
 		private int fps = 0;
 		private int fpsHandle = 0;
+		private int w = 1920;
+		private int h = 1080;
 		/**
 		 * shutter sound
 		 */
@@ -430,6 +437,26 @@ public final class CameraServer extends Handler {
 			mWeakContext = new WeakReference<Context>(context);
 			mCtrlBlock = ctrlBlock;
 			loadShutterSound(context);
+
+			// 初始化触控程序
+			ArrayList<PointF> points = new ArrayList<>();
+//			PointF p1 = new PointF(99.840004f, 99.360001f);
+//			PointF p = new PointF(99.840004f, 99.360001f);
+			points.add(new PointF(99.840004f, 99.360001f));
+			points.add(new PointF(99.840004f, 979.559998f));
+			points.add(new PointF(1820.160034f, 99.360001f));
+			points.add(new PointF(1820.160034f, 979.559998f));
+			touchManager.initialTouchPanel(points, w, h);
+
+			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+			File f1 = new File(downloadDir, "module/touchscreen/userdata/Homography.dat");
+			File f2 = new File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat");
+
+			if (f1.exists() && f2.exists()) {
+				touchManager.setCurrentMode(2);
+			} else {
+				touchManager.setCurrentMode(1);
+			}
 
 			touchManager.setCallback(new TouchManager.Callback() {
 				@Override
