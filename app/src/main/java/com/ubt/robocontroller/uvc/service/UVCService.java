@@ -75,6 +75,14 @@ public class UVCService extends BaseService {
 	public void onCreate() {
 		super.onCreate();
 		if (DEBUG) Log.d(TAG, "onCreate:");
+
+		if (mUSBMonitor == null) {
+			mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
+			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
+			mUSBMonitor.setDeviceFilter(filters);
+			mUSBMonitor.register();
+		}
+
 		mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		showNotification(getString(R.string.app_name));
 	}
@@ -105,13 +113,6 @@ public class UVCService extends BaseService {
 		if (DEBUG) Log.d(TAG, "onBind:" + intent);
 
 		points = intent.getParcelableArrayListExtra(EXTRA_POINTS);
-
-		if (mUSBMonitor == null) {
-			mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
-			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
-			mUSBMonitor.setDeviceFilter(filters);
-			mUSBMonitor.register();
-		}
 
 		final String action = intent != null ? intent.getAction() : null;
 		if (IUVCService.class.getName().equals(action)) {

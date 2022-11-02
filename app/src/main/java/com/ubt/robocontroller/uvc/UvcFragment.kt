@@ -41,6 +41,7 @@ class UvcFragment : BaseFragment() {
     private val mOnDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
         object : USBMonitor.OnDeviceConnectListener {
             override fun onAttach(device: UsbDevice) {
+                // 检查完USB权限之后调用，这时候设备是有权限的
                 if (!updateCameraDialog() && binding.cameraView.hasSurface()) {
                     tryOpenUVCCamera(true)
                 }
@@ -174,10 +175,15 @@ class UvcFragment : BaseFragment() {
         val list = usbManager.deviceList.values
         list.forEach { device ->
             if (device.productId == pid) {
-                ToastUtil.show(context, "打开相机")
+                ToastUtil.show(context, "打开相机${device.productId}")
                 if (mCameraClient == null) mCameraClient = CameraClient(activity, points, mCameraListener)
+                // 确认USB权限，注册回调方法
                 mCameraClient!!.select(device)
                 mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
+                // 1. 如果相机已经打开，回调ICameraClientCallback::onConnect方法
+                // 2. 如果相机没有打开，调用CameraServer::CameraThread::handleOpen方法创建UVCCamera对象，并打开相机，
+                // 同时回调onConnect方法，onConnect方法里面会添加一个Surface到服务端。
+                // 接着调用CameraServer::CameraThread::handleStartPreview方法，获得上一步添加的Surface，显示预览画面
                 mCameraClient!!.connect()
             }
         }

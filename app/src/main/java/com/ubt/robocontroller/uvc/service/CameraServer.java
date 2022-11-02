@@ -44,6 +44,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.serenegiant.encoder.MediaAudioEncoder;
 import com.serenegiant.encoder.MediaEncoder;
 import com.serenegiant.encoder.MediaMuxerWrapper;
@@ -57,7 +59,9 @@ import com.serenegiant.usb.UVCCamera;
 import com.ubt.robocontroller.Config;
 import com.ubt.robocontroller.IUVCServiceCallback;
 import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
+import com.ubt.robocontroller.PreferenceStorage;
 import com.ubt.robocontroller.R;
+import com.ubt.robocontroller.SharedPreferenceStorage;
 import com.ubt.robocontroller.TouchManager;
 
 import java.io.ByteArrayOutputStream;
@@ -65,6 +69,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -435,16 +440,38 @@ public final class CameraServer extends Handler {
 		private MediaMuxerWrapper mMuxer;
 		private MediaSurfaceEncoder mVideoEncoder;
 
+		private final PreferenceStorage prefs;
+
 		private Bitmap framebuffer;
 		private TouchManager touchManager = TouchManager.Companion.instance();
 		private int currentMarkIndex = 0;
 
-		private CameraThread(final Context context, final UsbControlBlock ctrlBlock, ArrayList<PointF> points) {
+		private CameraThread(final Context context, final UsbControlBlock ctrlBlock, ArrayList<PointF> pointArr) {
 			super("CameraThread");
 			if (DEBUG) Log.d(TAG_THREAD, "Constructor:");
 			mWeakContext = new WeakReference<Context>(context);
 			mCtrlBlock = ctrlBlock;
 			loadShutterSound(context);
+			prefs = new SharedPreferenceStorage(context);
+
+			ArrayList<PointF> points = null;
+			// 保存points
+			if (pointArr != null) {
+				String keyPointStr = new Gson().toJson(pointArr);
+				prefs.setKeyPoints(keyPointStr);
+				points = pointArr;
+			} else {
+				try {
+					Type listType = new TypeToken<List<PointF>>() {}.getType();
+					points = (new Gson()).fromJson(prefs.getKeyPoints(), listType);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (points == null) {
+				throw new IllegalArgumentException("Points can not be null");
+			}
 
 			// 初始化触控程序
 //			ArrayList<PointF> points = new ArrayList<>();
@@ -567,7 +594,6 @@ public final class CameraServer extends Handler {
 				if (mUVCCamera == null) return;
 				mFrameWidth = width;
 				mFrameHeight = height;
-				Log.d(TAG, "handleStartPreview: " + surface);
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
 				mUVCCamera.updateCameraParams();
@@ -720,7 +746,7 @@ public final class CameraServer extends Handler {
 			}
 			// 处理帧
 //			Log.d(TAG, "---------------handle frame--------------");
-			touchManager.process(framebuffer);
+//			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
 			if (frameCountHandle >= FIX_FPS) {
