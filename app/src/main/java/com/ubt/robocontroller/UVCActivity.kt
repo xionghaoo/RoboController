@@ -139,10 +139,8 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 1 -> {
                     if (currentMarkIndex == 3) {
                         binding.tvMarkInfo.text = "标定完成"
-//                        touchManager.setCurrentMode(2)
                     } else {
-//                        fragment.setMarkIndex(++currentMarkIndex)
-//                        touchManager.setMarkIndex(++currentMarkIndex)
+                        currentMarkIndex++
                         binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
                     }
                 }

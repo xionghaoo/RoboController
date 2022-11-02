@@ -719,7 +719,7 @@ public final class CameraServer extends Handler {
 				e.printStackTrace();
 			}
 			// 处理帧
-			Log.d(TAG, "---------------handle frame--------------");
+//			Log.d(TAG, "---------------handle frame--------------");
 			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
