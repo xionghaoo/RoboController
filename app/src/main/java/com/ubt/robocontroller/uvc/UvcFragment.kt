@@ -181,12 +181,6 @@ class UvcFragment : BaseFragment() {
                 mCameraClient!!.connect()
             }
         }
-//        if (list.size > index) {
-//            if (mCameraClient == null) mCameraClient = CameraClient(activity, mCameraListener)
-//            mCameraClient!!.select(list[index])
-//            mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
-//            mCameraClient!!.connect()
-//        }
     }
 
     fun setExposureMode(mode: Int) {

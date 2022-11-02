@@ -116,9 +116,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         Timber.d("onNewIntent")
-//        if (fragment.isAdded) {
-//            fragment.addSurface()
-//        }
     }
 
     override fun onMarking(index: Int, code: Int) {
@@ -315,7 +312,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     private fun requestUsbPermission() {
         val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
-
         val filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter)
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
             filters.forEach { filiter ->

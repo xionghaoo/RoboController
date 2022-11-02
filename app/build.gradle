@@ -42,17 +42,6 @@ android {
         }
     }
 
-//    signingConfigs {
-//        release {
-//            storeFile file("../robo.jks")
-//            storePassword "ubt123"
-//            keyAlias "robo"
-//            keyPassword "ubt123"
-//            v1SigningEnabled true
-//            v2SigningEnabled true
-//        }
-//    }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -60,7 +49,7 @@ android {
             signingConfig signingConfigs.release
         }
         debug {
-//            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
