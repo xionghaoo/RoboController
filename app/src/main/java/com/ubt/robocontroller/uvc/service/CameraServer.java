@@ -492,26 +492,25 @@ public final class CameraServer extends Handler {
 				touchManager.setCurrentMode(1);
 			}
 
-			touchManager.setCallback(new TouchManager.Callback() {
-				@Override
-				public void onMarking(int index, int code) {
-					switch (code) {
-						case 1600: {
-							// 处理UI
-							break;
-						}
-						case 1: {
-							if (currentMarkIndex == 3) {
-								// 切换到执行模式
-								touchManager.setCurrentMode(2);
-							} else {
-								touchManager.setMarkIndex(++currentMarkIndex);
-							}
-							break;
-						}
+			touchManager.setCallback((index, code) -> {
+				switch (code) {
+					case 1600: {
+						// 处理UI
+						break;
 					}
-					mHandler.processOnMarking(index, code);
+					case 1: {
+						if (currentMarkIndex == 3) {
+							// 切换到执行模式
+							touchManager.setCurrentMode(2);
+						} else {
+							touchManager.setMarkIndex(++currentMarkIndex);
+						}
+						break;
+					}
 				}
+
+				mHandler.processOnMarking(currentMarkIndex, code);
+
 			});
 
 			touchManager.setMarkIndex(currentMarkIndex);
@@ -746,7 +745,7 @@ public final class CameraServer extends Handler {
 			}
 			// 处理帧
 //			Log.d(TAG, "---------------handle frame--------------");
-//			touchManager.process(framebuffer);
+			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
 			if (frameCountHandle >= FIX_FPS) {

@@ -73,14 +73,8 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     private lateinit var binding: ActivityUvcactivityBinding
     private lateinit var fragment: UvcFragment
 
-//    private val touchManager = TouchManager.instance()
-    private var lastTime: Long = 0
-    private var cameraId: String = "0"
-    private lateinit var cameraFragment: CameraXPreviewFragment
-
     private val w = 1920
     private val h = 1080
-    private var currentMarkIndex = 0
 
     private val activityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         permissionTask()
@@ -126,7 +120,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
             when(code) {
                 1600 -> {
-                    when(currentMarkIndex) {
+                    when(index) {
                         0 -> binding.vMark0.marking()
                         1 -> binding.vMark1.marking()
                         2 -> binding.vMark2.marking()
@@ -134,11 +128,10 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                     }
                 }
                 1 -> {
-                    if (currentMarkIndex == 3) {
+                    if (index == 3) {
                         binding.tvMarkInfo.text = "标定完成"
                     } else {
-                        currentMarkIndex++
-                        binding.tvMarkInfo.text = "当前标定点：$currentMarkIndex"
+                        binding.tvMarkInfo.text = "当前标定点：$index"
                     }
                 }
             }
