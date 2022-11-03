@@ -33,6 +33,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -62,6 +63,7 @@ public class UVCService extends BaseService {
 	private static final String TAG = "UVCService";
 	private static final int NOTIFICATION = R.string.app_name;
 	public static final String EXTRA_POINTS = "com.ubt.robocontroller.UVCService.EXTRA_POINTS";
+	public static final String EXTRA_BOOT_CMD = "com.ubt.robocontroller.UVCService.EXTRA_BOOT_CMD";
 
 	private USBMonitor mUSBMonitor;
 	private NotificationManager mNotificationManager;
@@ -90,6 +92,20 @@ public class UVCService extends BaseService {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "onStartCommand: ");
+		boolean isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
+		if (isBoot) {
+//			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
+//			UsbManager mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+//			List<UsbDevice> devices = us
+//			for (int i = 0; i < ; i++) {
+//
+//			}
+//			for (int i = 0; i < filters.size(); i++) {
+//				DeviceFilter filter = filters.get(i);
+//				if (filter.mProductId == )
+//			}
+//			mUSBMonitor.requestPermission()
+		}
 		return START_STICKY;
 	}
 
