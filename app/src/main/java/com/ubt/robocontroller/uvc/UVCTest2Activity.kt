@@ -202,9 +202,9 @@ class UVCTest2Activity : BaseActivity(), CameraDialogParent {
                         }
                         framebuffer?.copyPixelsFromBuffer(buffer)
 
-//                        CoroutineScope(Dispatchers.Main).launch {
-//                            binding.ivResult.setImageBitmap(framebuffer)
-//                        }
+                        CoroutineScope(Dispatchers.Main).launch {
+                            binding.ivResult.setImageBitmap(framebuffer)
+                        }
                         touchManager.process(framebuffer!!)
 //                        Thread.sleep(50)
                         // -----------------------------
