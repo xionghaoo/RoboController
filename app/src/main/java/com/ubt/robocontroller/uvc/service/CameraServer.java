@@ -63,9 +63,11 @@ import com.ubt.robocontroller.PreferenceStorage;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.SharedPreferenceStorage;
 import com.ubt.robocontroller.TouchManager;
+import com.ubt.robocontroller.utils.FileUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -458,19 +460,29 @@ public final class CameraServer extends Handler {
 			// 保存points
 			if (pointArr != null) {
 				String keyPointStr = new Gson().toJson(pointArr);
-				prefs.setKeyPoints(keyPointStr);
+				File pointFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MarkPoints.json");
+				try {
+					FileWriter writer = new FileWriter(pointFile);
+					writer.write(keyPointStr);
+					writer.flush();
+					writer.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				points = pointArr;
 			} else {
 				try {
+					File pointFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MarkPoints.json");
+					String pointStr = FileUtil.Companion.readFile(pointFile);
 					Type listType = new TypeToken<List<PointF>>() {}.getType();
-					points = (new Gson()).fromJson(prefs.getKeyPoints(), listType);
+					points = (new Gson()).fromJson(pointStr, listType);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 
 			if (points == null) {
-				throw new IllegalArgumentException("Points can not be null");
+				return;
 			}
 
 			// 初始化触控程序

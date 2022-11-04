@@ -48,12 +48,14 @@ import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
+import com.ubt.robocontroller.Config;
 import com.ubt.robocontroller.IUVCService;
 import com.ubt.robocontroller.IUVCServiceCallback;
 import com.ubt.robocontroller.IUVCServiceOnFrameAvailable;
 import com.ubt.robocontroller.IUVCSlaveService;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.UVCActivity;
+import com.ubt.robocontroller.uvc.serviceclient.ICameraClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +70,8 @@ public class UVCService extends BaseService {
 	private USBMonitor mUSBMonitor;
 	private NotificationManager mNotificationManager;
 	private ArrayList<PointF> points;
+	private Boolean isBoot = false;
+	private ICameraClient cameraClient = null;
 
 	public UVCService() {
 		if (DEBUG) Log.d(TAG, "Constructor:");
@@ -93,6 +97,7 @@ public class UVCService extends BaseService {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "onStartCommand: ");
 		boolean isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
+		this.isBoot = isBoot;
 		if (isBoot) {
 //			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
 //			UsbManager mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
@@ -194,10 +199,17 @@ public class UVCService extends BaseService {
 		mNotificationManager.notify(NOTIFICATION, notification);
     }
 
+	private void openCamera(UsbDevice device) {
+		mUSBMonitor.requestPermission(device);
+	};
+
 	private final OnDeviceConnectListener mOnDeviceConnectListener = new OnDeviceConnectListener() {
 		@Override
 		public void onAttach(final UsbDevice device) {
 			if (DEBUG) Log.d(TAG, "OnDeviceConnectListener#onAttach:");
+			if (isBoot) {
+				openCamera(device);
+			}
 		}
 
 		@Override
@@ -225,6 +237,11 @@ public class UVCService extends BaseService {
 						}
 						sServiceSync.notifyAll();
 
+					}
+
+					if (isBoot) {
+						service.connect();
+						isBoot = false;
 					}
 				}
 			}, 0);

@@ -220,8 +220,8 @@ class UvcFragment : BaseFragment() {
     }
 
     companion object {
-        private const val CAMERA_WIDTH = 640
-        private const val CAMERA_HEIGHT = 480
+        const val CAMERA_WIDTH = 640
+        const val CAMERA_HEIGHT = 480
 
 //        private const val CAMERA_INDEX = 1
 
