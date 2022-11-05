@@ -64,6 +64,7 @@ import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.SharedPreferenceStorage;
 import com.ubt.robocontroller.TouchManager;
 import com.ubt.robocontroller.utils.FileUtil;
+import com.ubt.robocontroller.utils.MarkUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -82,8 +83,8 @@ public final class CameraServer extends Handler {
 	private static final boolean DEBUG = true;
 	private static final String TAG = "CameraServer";
 
-	private static final int DEFAULT_WIDTH = 640;
-	private static final int DEFAULT_HEIGHT = 480;
+	private static final int DEFAULT_WIDTH = Config.CAMERA_WIDTH;
+	private static final int DEFAULT_HEIGHT = Config.CAMERA_HEIGHT;
 	
 	private int mFrameWidth = DEFAULT_WIDTH, mFrameHeight = DEFAULT_HEIGHT;
 	
@@ -456,23 +457,28 @@ public final class CameraServer extends Handler {
 			loadShutterSound(context);
 			prefs = new SharedPreferenceStorage(context);
 
+			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 			ArrayList<PointF> points = null;
 			// 保存points
 			if (pointArr != null) {
 				String keyPointStr = new Gson().toJson(pointArr);
-				File pointFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MarkPoints.json");
+				File pointFile = new File(downloadDir, "MarkPoints.json");
 				try {
+//					if (!pointFile.exists()) {
+//						pointFile.createNewFile();
+//					}
 					FileWriter writer = new FileWriter(pointFile);
 					writer.write(keyPointStr);
 					writer.flush();
 					writer.close();
 				} catch (Exception e) {
+					Log.e(TAG_THREAD, "Points save failure");
 					e.printStackTrace();
 				}
 				points = pointArr;
 			} else {
 				try {
-					File pointFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "MarkPoints.json");
+					File pointFile = new File(downloadDir, "MarkPoints.json");
 					String pointStr = FileUtil.Companion.readFile(pointFile);
 					Type listType = new TypeToken<List<PointF>>() {}.getType();
 					points = (new Gson()).fromJson(pointStr, listType);
@@ -480,51 +486,59 @@ public final class CameraServer extends Handler {
 					e.printStackTrace();
 				}
 			}
-
 			if (points == null) {
 				return;
 			}
-
+			Log.d(TAG_THREAD, "received points: " + points.size());
 			// 初始化触控程序
-//			ArrayList<PointF> points = new ArrayList<>();
-//			points.add(new PointF(99.840004f, 99.360001f));
-//			points.add(new PointF(99.840004f, 979.559998f));
-//			points.add(new PointF(1820.160034f, 99.360001f));
-//			points.add(new PointF(1820.160034f, 979.559998f));
-			Log.d(TAG, "CameraThread: received points: " + points.size());
 			touchManager.initialTouchPanel(points, w, h);
 
-			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-			File f1 = new File(downloadDir, "module/touchscreen/userdata/Homography.dat");
-			File f2 = new File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat");
-
-			if (f1.exists() && f2.exists()) {
+//			File f1 = new File(downloadDir, "module/touchscreen/userdata/Homography.dat");
+//			File f2 = new File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat");
+//			if (f1.exists() && f2.exists()) {
+//				touchManager.setCurrentMode(2);
+//			} else {
+//				touchManager.setCurrentMode(1);
+//			}
+			if (MarkUtil.Companion.isRunMode()) {
 				touchManager.setCurrentMode(2);
 			} else {
 				touchManager.setCurrentMode(1);
 			}
 
 			touchManager.setCallback((index, code) -> {
+				mHandler.processOnMarking(currentMarkIndex, code);
+
 				switch (code) {
+					case 1606: {
+						touchManager.setCurrentMode(2);
+						break;
+					}
 					case 1600: {
 						// 处理UI
 						break;
 					}
 					case 1: {
 						if (currentMarkIndex == 3) {
-							// 切换到执行模式
-							touchManager.setCurrentMode(2);
+							// 4个点标定完成
+							// 显示等待动画
 						} else {
-							touchManager.setMarkIndex(++currentMarkIndex);
+							if (index == 0) {
+								currentMarkIndex = 1;
+							} else if (index == 1) {
+								currentMarkIndex = 2;
+							} else if (index == 2) {
+								currentMarkIndex = 3;
+							}
+							touchManager.setMarkIndex(currentMarkIndex);
 						}
 						break;
 					}
 				}
 
-				mHandler.processOnMarking(currentMarkIndex, code);
-
 			});
 
+			// 初始化标定
 			touchManager.setMarkIndex(currentMarkIndex);
 		}
 
@@ -757,7 +771,7 @@ public final class CameraServer extends Handler {
 			}
 			// 处理帧
 //			Log.d(TAG, "---------------handle frame--------------");
-			touchManager.process(framebuffer);
+//			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
 			if (frameCountHandle >= FIX_FPS) {

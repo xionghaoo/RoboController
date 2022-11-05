@@ -62,9 +62,14 @@ mUVCCamera.startPreview();
 + `deviceList`: 获取USB设备列表
 
 
+## rk3588和手机不一致的地方
+1. 手机帧率30帧
+2. device_filter.xml 指定相机
+3. TouchManager手机上没有权限处理uinput设备
+
 ## 问题记录
 
-### 1. 打开相机后预览画面是黑的，也没有帧回调
+### 1. 打开相机后预览失败，也没有帧回调
 
 原因：帧率不匹配
 

@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
 import timber.log.Timber
 
@@ -19,8 +18,6 @@ class MarkView : View {
         private const val STEP = 5
         // 两个圆之间的间隙
         private const val CIRCLE_GAP = 200
-        // onDraw刷新时间间隔ms
-        private const val DELAY = 50L
         // 起始圆半径
         private const val MIN_RADIUS = 50f
     }
@@ -36,7 +33,8 @@ class MarkView : View {
     private var paintFinish: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var radiusMarking = 0f
-
+    // onDraw刷新时间间隔ms
+    private var delay = 50L
 
     constructor(context: Context?) : super(context) {
 
@@ -89,7 +87,7 @@ class MarkView : View {
                     finish()
                 } else {
                     canvas?.drawCircle(centerX, centerY, radiusMarking, paintMarking)
-                    postInvalidateDelayed(DELAY)
+                    postInvalidateDelayed(delay)
                 }
             }
             Status.FINISH -> {
@@ -98,23 +96,10 @@ class MarkView : View {
         }
     }
 
-//    override fun onTouchEvent(e: MotionEvent): Boolean {
-//        when (e.action) {
-//            MotionEvent.ACTION_DOWN -> {
-//                marking()
-//            }
-//            MotionEvent.ACTION_MOVE -> {
-//
-//            }
-//            MotionEvent.ACTION_UP -> {
-//
-//            }
-//        }
-//        return true
-//    }
-
     fun setShowTime(time: Int) {
-
+        val width = (width - paddingTop - paddingRight).toFloat()
+        val maxRadius = width / 2f
+        delay = (time / (maxRadius / STEP)).toLong()
     }
 
     fun marking() {

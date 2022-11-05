@@ -16,6 +16,7 @@ import com.serenegiant.usb.CameraDialog
 import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCCamera
+import com.ubt.robocontroller.Config
 import com.ubt.robocontroller.R
 import com.ubt.robocontroller.databinding.FragmentUvcBinding
 import com.ubt.robocontroller.uvc.service.UVCService
@@ -32,12 +33,14 @@ class UvcFragment : BaseFragment() {
     private var mUSBMonitor: USBMonitor? = null
     private var mCameraClient: ICameraClient? = null
     private var listener: OnFragmentActionListener? = null
+    private var hasAddSurface = false
 
     private val pid: Int by lazy { arguments?.getInt(ARG_PID) ?: 0 }
     private val points: ArrayList<PointF> by lazy {
         arguments?.getParcelableArrayList(ARG_POINTS) ?: arrayListOf()
     }
 
+    // 相机权限申请后回调
     private val mOnDeviceConnectListener: USBMonitor.OnDeviceConnectListener =
         object : USBMonitor.OnDeviceConnectListener {
             override fun onAttach(device: UsbDevice) {
@@ -76,10 +79,11 @@ class UvcFragment : BaseFragment() {
             }
         }
 
+    // 相机连接后回调
     private val mCameraListener: ICameraClientCallback = object : ICameraClientCallback {
         override fun onConnect() {
-            Timber.d("mCameraListener -> onConnect: add surface")
-            mCameraClient!!.addSurface(binding.cameraView.surface, false)
+//            mCameraClient!!.addSurface(binding.cameraView.surface, false)
+            addSurfaceWithCheck()
             // start UVCService
             val intent = Intent(activity, UVCService::class.java)
             activity.startService(intent)
@@ -145,7 +149,7 @@ class UvcFragment : BaseFragment() {
     }
 
     override fun onPause() {
-        mCameraClient?.removeSurface(binding.cameraView.surface)
+        removeSurfaceWithCheck()
         super.onPause()
     }
 
@@ -164,6 +168,21 @@ class UvcFragment : BaseFragment() {
         return false
     }
 
+    fun addSurfaceWithCheck() {
+        Timber.d("addWithCheckSurface")
+        if (!hasAddSurface) {
+            mCameraClient?.addSurface(binding.cameraView.surface, false)
+            hasAddSurface = true
+        }
+    }
+
+    private fun removeSurfaceWithCheck() {
+        if (hasAddSurface) {
+            mCameraClient?.removeSurface(binding.cameraView.surface)
+            hasAddSurface = false
+        }
+    }
+
     private fun tryOpenUVCCamera(requestPermission: Boolean) {
         openUVCCamera()
     }
@@ -179,7 +198,7 @@ class UvcFragment : BaseFragment() {
                 if (mCameraClient == null) mCameraClient = CameraClient(activity, points, mCameraListener)
                 // 确认USB权限，注册回调方法
                 mCameraClient!!.select(device)
-                mCameraClient!!.resize(CAMERA_WIDTH, CAMERA_HEIGHT)
+                mCameraClient!!.resize(Config.CAMERA_WIDTH, Config.CAMERA_HEIGHT)
                 // 1. 如果相机已经打开，回调ICameraClientCallback::onConnect方法
                 // 2. 如果相机没有打开，调用CameraServer::CameraThread::handleOpen方法创建UVCCamera对象，并打开相机，
                 // 同时回调onConnect方法，onConnect方法里面会添加一个Surface到服务端。
@@ -205,10 +224,6 @@ class UvcFragment : BaseFragment() {
         mCameraClient?.addSurface(binding.cameraView.surface, false)
     }
 
-//    fun setMarkIndex(index: Int) {
-//        mCameraClient?.setMarkIndex(index)
-//    }
-
     fun stopService() {
         val intent = Intent(activity, UVCService::class.java)
         activity.stopService(intent)
@@ -220,11 +235,6 @@ class UvcFragment : BaseFragment() {
     }
 
     companion object {
-        const val CAMERA_WIDTH = 640
-        const val CAMERA_HEIGHT = 480
-
-//        private const val CAMERA_INDEX = 1
-
         private const val ARG_PID = "ARG_PID"
         private const val ARG_POINTS = "ARG_POINTS"
 

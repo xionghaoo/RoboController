@@ -27,6 +27,7 @@ import com.serenegiant.common.BaseActivity
 import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.UVCCamera
 import com.ubt.robocontroller.databinding.ActivityUvcactivityBinding
+import com.ubt.robocontroller.utils.MarkUtil
 import com.ubt.robocontroller.uvc.UvcFragment
 import kotlinx.coroutines.*
 import pub.devrel.easypermissions.AfterPermissionGranted
@@ -109,17 +110,28 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        Timber.d("onNewIntent")
+        fragment.addSurfaceWithCheck()
     }
 
     override fun onMarking(index: Int, code: Int) {
         Timber.d("onMarking: $index, $code")
 
         runOnUiThread {
-            binding.btnLog.text = "onMarking: index=$index, code=$code"
+            binding.btnMarking.text = "onMarking: index=$index, code=$code"
 
             when(code) {
+                1606 -> {
+                    //清除标定缓存
+                    //停止显示动画
+                    //设置 正常工作 模式
+//                    binding.vMark0.visibility = View.INVISIBLE
+//                    binding.vMark1.visibility = View.INVISIBLE
+//                    binding.vMark2.visibility = View.INVISIBLE
+//                    binding.vMark3.visibility = View.INVISIBLE
+                    binding.tvMarkInfo.text = "工作模式"
+                }
                 1600 -> {
+                    // 显示采集动画，时间：300ms
                     when(index) {
                         0 -> binding.vMark0.marking()
                         1 -> binding.vMark1.marking()
@@ -129,10 +141,30 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 }
                 1 -> {
                     if (index == 3) {
-                        binding.tvMarkInfo.text = "标定完成"
+                        // 4个点标定完成
+                        // 显示等待动画
+                        binding.tvMarkInfo.text = "标定完成, 正在进入工作模式"
                     } else {
                         binding.tvMarkInfo.text = "当前标定点：$index"
+                        when(index) {
+                            0 -> binding.vMark1.visibility = View.VISIBLE
+                            1 -> binding.vMark2.visibility = View.VISIBLE
+                            2 -> binding.vMark3.visibility = View.VISIBLE
+                            else -> {}
+                        }
                     }
+                }
+                2 -> {
+                    // 显示错误信息，等待返回码 102
+                    binding.tvMarkInfo.text = "标定错误"
+                }
+                102 -> {
+                    // 继续采集标定数据
+                    binding.tvMarkInfo.text = "继续标定"
+                }
+                -1 -> {
+                    // 标定出现错误，退出整个流程
+                    binding.tvMarkInfo.text = "标定失败"
                 }
             }
         }
@@ -148,6 +180,11 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     private fun initial(pid: Int) {
+        binding.vMark0.setShowTime(300)
+        binding.vMark1.setShowTime(300)
+        binding.vMark2.setShowTime(300)
+        binding.vMark3.setShowTime(300)
+
         val points = arrayListOf<PointF>(
             PointF(w * 0.052f, h * 0.092f),
             PointF(w * 0.052f, h * 0.907f),
@@ -182,40 +219,20 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
         Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
 
-        // 初始化触控程序
-//        touchManager.initialTouchPanel(points, w, h)
-
-//        val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//        val f1 = File(downloadDir, "module/touchscreen/userdata/Homography.dat")
-//        val f2 = File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat")
-//        if (f1.exists() && f2.exists()) {
-//            touchManager.setCurrentMode(2)
-//        } else {
-//            touchManager.setCurrentMode(1)
-//        }
-
-        // 标定第一个点
-//        touchManager.setMarkIndex(currentMarkIndex)
-        binding.tvMarkInfo.text = "当前标定点：0"
-
-        // 测试
-        binding.btnMark.visibility = View.GONE
-        binding.btnMark.setOnClickListener {
-//            touchManager.setMarkIndex(0)
+        if (MarkUtil.isRunMode()) {
+            // 当前为运行模式
+            binding.tvMarkInfo.text = "运行模式"
+        } else {
+            binding.tvMarkInfo.text = "当前标定点：0"
         }
 
-//        binding.btnTest.visibility = View.GONE
-        binding.btnTest.setOnClickListener {
-
-        }
-
-        // 设置曝光参数
+        // 设置曝光模式
         binding.btnSetExposureMode.setOnClickListener {
             fragment.setExposureMode(UVCCamera.EXPOSURE_MODE_AUTO_OFF)
             updateExposure()
             ToastUtil.show(this, "设置为手动曝光模式")
         }
-
+        // 设置曝光参数
         binding.btnSetExposureValue.setOnClickListener {
             val percent = binding.edtExposure.text.toString().toInt()
             fragment.setExposure(percent)
@@ -226,22 +243,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 }
             }
         }
-
-//        cameraFragment.setExposure(1)
-
-//        initMarkViews()
-
-//        val sb = StringBuffer()
-//        val cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-//        val characteristic = cameraManager.getCameraCharacteristics(cameraId)
-//        val orientation = characteristic.get(CameraCharacteristics.SENSOR_ORIENTATION)
-//        sb.append("摄像头角度：$orientation").append("\n")
-//        // 打开第一个摄像头
-//        val configurationMap = characteristic.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-//        configurationMap?.getOutputSizes(ImageFormat.JPEG)?.forEach { size ->
-//            sb.append("camera size: ${size.width} x ${size.height}").append("\n")
-//        }
-//        binding.tvCameraInfo.text = sb.toString()
 
         fragment = UvcFragment.newInstance(pid, points)
         fragmentManager.beginTransaction()
@@ -292,7 +293,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
 
-    // 下面是USB权限申请，暂时不需要
     private fun tryGetUsbPermission() {
         mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
@@ -306,9 +306,11 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     private fun requestUsbPermission() {
         val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), FLAG_IMMUTABLE)
         val filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter)
+        var foundDevice = false
         mUsbManager?.deviceList?.values?.forEach { usbDevice ->
             filters.forEach { filiter ->
                 if (filiter.mProductId == usbDevice.productId && !filiter.isExclude) {
+                    foundDevice = true
                     if (mUsbManager!!.hasPermission(usbDevice)) {
                         afterGetUsbPermission(usbDevice)
                     } else {
@@ -317,6 +319,9 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                     }
                 }
             }
+        }
+        if (!foundDevice) {
+            ToastUtil.show(this, "未找到指定设备")
         }
     }
 

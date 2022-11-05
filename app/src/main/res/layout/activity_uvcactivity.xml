@@ -24,18 +24,7 @@
             android:text="标定0"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_test" />
-
-        <Button
-            android:id="@+id/btn_test"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="测试"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.ubt.robocontroller.MarkView
             android:id="@+id/v_mark_0"
@@ -51,6 +40,7 @@
             android:layout_width="@dimen/mark_view_size"
             android:layout_height="@dimen/mark_view_size"
             android:layout_margin="@dimen/mark_view_margin"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -59,6 +49,7 @@
             android:layout_width="@dimen/mark_view_size"
             android:layout_height="@dimen/mark_view_size"
             android:layout_margin="@dimen/mark_view_margin"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -67,45 +58,49 @@
             android:layout_width="@dimen/mark_view_size"
             android:layout_height="@dimen/mark_view_size"
             android:layout_margin="@dimen/mark_view_margin"
+            android:visibility="invisible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/btn_log"
+            android:id="@+id/btn_marking"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="200dp"
+            android:text="onMarking"
+            android:layout_marginTop="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_mark_info" />
 
         <TextView
             android:id="@+id/tv_camera_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btn_test"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="@+id/tv_fps"
+            app:layout_constraintTop_toBottomOf="@+id/btn_set_exposure_mode"
+            tools:text="camera_info" />
 
         <TextView
             android:id="@+id/tv_mark_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:layout_constraintEnd_toEndOf="@+id/btn_mark"
-            app:layout_constraintStart_toStartOf="@+id/btn_mark"
-            app:layout_constraintTop_toBottomOf="@+id/btn_mark" />
+            android:layout_marginTop="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="当前标定" />
 
         <ImageView
             android:id="@+id/iv_result"
             android:layout_width="300dp"
-            android:layout_height="0dp"
+            android:layout_height="300dp"
+            android:scaleType="fitEnd"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_mark_info" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/tv_fps"
@@ -140,10 +135,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="设置手动曝光模式"
-            android:layout_marginStart="20dp"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_exposure"
-            app:layout_constraintStart_toEndOf="@+id/tv_exposure"
-            app:layout_constraintTop_toTopOf="@+id/tv_exposure" />
+            android:layout_marginTop="15dp"
+            app:layout_constraintStart_toStartOf="@+id/tv_exposure"
+            app:layout_constraintTop_toBottomOf="@+id/tv_exposure" />
 
 <!--        <SeekBar-->
 <!--            android:id="@+id/sb_exposure"-->

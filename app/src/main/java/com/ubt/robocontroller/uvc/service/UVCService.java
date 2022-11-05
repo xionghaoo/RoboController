@@ -71,7 +71,6 @@ public class UVCService extends BaseService {
 	private NotificationManager mNotificationManager;
 	private ArrayList<PointF> points;
 	private Boolean isBoot = false;
-	private ICameraClient cameraClient = null;
 
 	public UVCService() {
 		if (DEBUG) Log.d(TAG, "Constructor:");
@@ -96,21 +95,7 @@ public class UVCService extends BaseService {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "onStartCommand: ");
-		boolean isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
-		this.isBoot = isBoot;
-		if (isBoot) {
-//			List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
-//			UsbManager mUsbManager = getSystemService(Context.USB_SERVICE) as UsbManager
-//			List<UsbDevice> devices = us
-//			for (int i = 0; i < ; i++) {
-//
-//			}
-//			for (int i = 0; i < filters.size(); i++) {
-//				DeviceFilter filter = filters.get(i);
-//				if (filter.mProductId == )
-//			}
-//			mUSBMonitor.requestPermission()
-		}
+		this.isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
 		return START_STICKY;
 	}
 
@@ -199,16 +184,12 @@ public class UVCService extends BaseService {
 		mNotificationManager.notify(NOTIFICATION, notification);
     }
 
-	private void openCamera(UsbDevice device) {
-		mUSBMonitor.requestPermission(device);
-	};
-
 	private final OnDeviceConnectListener mOnDeviceConnectListener = new OnDeviceConnectListener() {
 		@Override
 		public void onAttach(final UsbDevice device) {
 			if (DEBUG) Log.d(TAG, "OnDeviceConnectListener#onAttach:");
 			if (isBoot) {
-				openCamera(device);
+				mUSBMonitor.requestPermission(device);
 			}
 		}
 
@@ -238,7 +219,7 @@ public class UVCService extends BaseService {
 						sServiceSync.notifyAll();
 
 					}
-
+					// 开机启动时连接服务
 					if (isBoot) {
 						service.connect();
 						isBoot = false;
