@@ -95,7 +95,9 @@ public class UVCService extends BaseService {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "onStartCommand: ");
-		this.isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
+		if (intent != null) {
+			this.isBoot = intent.getBooleanExtra(EXTRA_BOOT_CMD, false);
+		}
 		return START_STICKY;
 	}
 

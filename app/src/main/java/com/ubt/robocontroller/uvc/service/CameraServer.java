@@ -771,7 +771,7 @@ public final class CameraServer extends Handler {
 			}
 			// 处理帧
 //			Log.d(TAG, "---------------handle frame--------------");
-//			touchManager.process(framebuffer);
+			touchManager.process(framebuffer);
 			// 处理后帧率
 			frameCountHandle ++;
 			if (frameCountHandle >= FIX_FPS) {

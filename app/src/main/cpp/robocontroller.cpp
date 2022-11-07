@@ -236,7 +236,7 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
             }
             break;
         case 2:
-            LOGCATD("ProcessTouchData");
+//            LOGCATD("ProcessTouchData");
             PorcessTouchData(dst);
             break;
     }
