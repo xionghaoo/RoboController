@@ -63,6 +63,7 @@ import com.ubt.robocontroller.PreferenceStorage;
 import com.ubt.robocontroller.R;
 import com.ubt.robocontroller.SharedPreferenceStorage;
 import com.ubt.robocontroller.TouchManager;
+import com.ubt.robocontroller.UVCConfig;
 import com.ubt.robocontroller.utils.FileUtil;
 import com.ubt.robocontroller.utils.MarkUtil;
 
@@ -458,6 +459,18 @@ public final class CameraServer extends Handler {
 			prefs = new SharedPreferenceStorage(context);
 
 			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+			// 设置曝光度
+			File f = new File(context.getFilesDir(), "uvc_config.json");
+			if (f.exists()) {
+				try {
+					String configStr = FileUtil.Companion.readFile(f);
+					UVCConfig config = new Gson().fromJson(configStr, UVCConfig.class);
+					setExposure(config.getExposure());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
 			ArrayList<PointF> points = null;
 			// 保存points
 			if (pointArr != null) {
@@ -486,6 +499,7 @@ public final class CameraServer extends Handler {
 					e.printStackTrace();
 				}
 			}
+
 			if (points == null) {
 				return;
 			}
