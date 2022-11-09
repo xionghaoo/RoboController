@@ -12,11 +12,11 @@ import kotlin.reflect.KProperty
  */
 interface PreferenceStorage {
     var keyPoints: String?
+    var exposure: Int
     fun clearCache()
 }
 
-class SharedPreferenceStorage(context: Context) :
-    PreferenceStorage {
+class SharedPreferenceStorage(context: Context) : PreferenceStorage {
     private val prefs: Lazy<SharedPreferences> = lazy {
         context.applicationContext.getSharedPreferences(
             PREFS_NAME, Context.MODE_PRIVATE
@@ -26,6 +26,7 @@ class SharedPreferenceStorage(context: Context) :
     }
 
     override var keyPoints by StringPreference(prefs, PREF_KEY_POINTS, null)
+    override var exposure: Int by IntPreference(prefs, PREF_EXPOSURE, -1)
 
     // 登出时清理缓存
     override fun clearCache() {
@@ -34,6 +35,7 @@ class SharedPreferenceStorage(context: Context) :
     companion object {
         const val PREFS_NAME = "robocontroller_prefs"
         const val PREF_KEY_POINTS = "pref_key_points"
+        const val PREF_EXPOSURE = "pref_exposure"
     }
 }
 

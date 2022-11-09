@@ -23,6 +23,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
+import com.google.gson.Gson
 import com.serenegiant.common.BaseActivity
 import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.UVCCamera
@@ -35,6 +36,7 @@ import timber.log.Timber
 import xh.zero.core.utils.SystemUtil
 import xh.zero.core.utils.ToastUtil
 import java.io.File
+import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -218,6 +220,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
         binding.btnSetExposureValue.setOnClickListener {
             val percent = binding.edtExposure.text.toString().toInt()
+            saveExposureToFile(percent)
             fragment.setExposure(percent)
             CoroutineScope(Dispatchers.Default).launch {
                 delay(200)
@@ -247,6 +250,22 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         fragmentManager.beginTransaction()
             .add(R.id.fragment_container, fragment)
             .commit()
+    }
+
+    private fun saveExposureToFile(exposure: Int) {
+        val f = File(filesDir, "uvc_config.json")
+        if (!f.exists()) {
+            f.createNewFile()
+        }
+        try {
+            val value = Gson().toJson(UVCConfig(exposure))
+            val writer = FileWriter(f)
+            writer.write(value)
+            writer.flush()
+            writer.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun updateExposure() {
