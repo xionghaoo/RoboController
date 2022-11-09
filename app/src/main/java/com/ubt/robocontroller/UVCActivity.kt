@@ -110,6 +110,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        Timber.d("onNewIntent")
         fragment.addSurfaceWithCheck()
     }
 

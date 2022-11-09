@@ -14,7 +14,7 @@ android {
         minSdk 23
         targetSdk 33
         versionCode 13
-        versionName "0.1.1"
+        versionName "0.1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -79,8 +79,9 @@ android {
             // variant.flavorName -> prod
             // def apk = output.outputFile
             // example: uatRelease_v1.0.0_20200101a_1.apk
+            def packageName = defaultConfig.applicationId
             def today = new Date().format('yyMMdd').toString()
-            outputFileName = "${variant.name}_v${variant.versionName}_${variant.versionCode}_${today}.apk"
+            outputFileName = "${packageName}_${variant.name}_v${variant.versionName}_${variant.versionCode}_${today}.apk"
         }
     }
 }
