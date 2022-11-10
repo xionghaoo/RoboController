@@ -466,9 +466,6 @@ public final class CameraServer extends Handler {
 				String keyPointStr = new Gson().toJson(pointArr);
 				File pointFile = new File(downloadDir, "MarkPoints.json");
 				try {
-//					if (!pointFile.exists()) {
-//						pointFile.createNewFile();
-//					}
 					FileWriter writer = new FileWriter(pointFile);
 					writer.write(keyPointStr);
 					writer.flush();
@@ -507,7 +504,9 @@ public final class CameraServer extends Handler {
 
 				switch (code) {
 					case 1606: {
-						touchManager.setCurrentMode(2);
+						if (currentMarkIndex == 3) {
+							touchManager.setCurrentMode(2);
+						}
 						break;
 					}
 					case 1600: {
@@ -519,13 +518,14 @@ public final class CameraServer extends Handler {
 							// 4个点标定完成
 							// 显示等待动画
 						} else {
-							if (index == 0) {
-								currentMarkIndex = 1;
-							} else if (index == 1) {
-								currentMarkIndex = 2;
-							} else if (index == 2) {
-								currentMarkIndex = 3;
-							}
+//							if (index == 0) {
+//								currentMarkIndex = 1;
+//							} else if (index == 1) {
+//								currentMarkIndex = 2;
+//							} else if (index == 2) {
+//								currentMarkIndex = 3;
+//							}
+							currentMarkIndex = index + 1;
 							touchManager.setMarkIndex(currentMarkIndex);
 						}
 						break;

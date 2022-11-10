@@ -128,10 +128,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                     //清除标定缓存
                     //停止显示动画
                     //设置 正常工作 模式
-//                    binding.vMark0.visibility = View.INVISIBLE
-//                    binding.vMark1.visibility = View.INVISIBLE
-//                    binding.vMark2.visibility = View.INVISIBLE
-//                    binding.vMark3.visibility = View.INVISIBLE
                     binding.tvMarkInfo.text = "工作模式"
                 }
                 1600 -> {
