@@ -459,17 +459,6 @@ public final class CameraServer extends Handler {
 			prefs = new SharedPreferenceStorage(context);
 
 			File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-			// 设置曝光度
-			File f = new File(context.getFilesDir(), "uvc_config.json");
-			if (f.exists()) {
-				try {
-					String configStr = FileUtil.Companion.readFile(f);
-					UVCConfig config = new Gson().fromJson(configStr, UVCConfig.class);
-					setExposure(config.getExposure());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 
 			ArrayList<PointF> points = null;
 			// 保存points
@@ -507,13 +496,6 @@ public final class CameraServer extends Handler {
 			// 初始化触控程序
 			touchManager.initialTouchPanel(points, w, h);
 
-//			File f1 = new File(downloadDir, "module/touchscreen/userdata/Homography.dat");
-//			File f2 = new File(downloadDir, "module/touchscreen/userdata/ThresholdTemplate.dat");
-//			if (f1.exists() && f2.exists()) {
-//				touchManager.setCurrentMode(2);
-//			} else {
-//				touchManager.setCurrentMode(1);
-//			}
 			if (MarkUtil.Companion.isRunMode()) {
 				touchManager.setCurrentMode(2);
 			} else {
@@ -638,6 +620,20 @@ public final class CameraServer extends Handler {
 				mUVCCamera.updateCameraParams();
 				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				Log.d(TAG, "end start preview");
+
+				File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+				// 设置曝光度
+				File f = new File(downloadDir, "uvc_config.json");
+				if (f.exists()) {
+					try {
+						String configStr = FileUtil.Companion.readFile(f);
+						UVCConfig config = new Gson().fromJson(configStr, UVCConfig.class);
+						Log.d(TAG_THREAD, "setExposure from uvc_config: " + config.getExposure());
+						setExposure(config.getExposure());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 

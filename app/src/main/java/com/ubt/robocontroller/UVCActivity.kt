@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -255,16 +256,14 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     private fun saveExposureToFile(exposure: Int) {
-        val f = File(filesDir, "uvc_config.json")
-        if (!f.exists()) {
-            f.createNewFile()
-        }
+        val f = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "uvc_config.json")
         try {
             val value = Gson().toJson(UVCConfig(exposure))
             val writer = FileWriter(f)
             writer.write(value)
             writer.flush()
             writer.close()
+            Log.d(TAG, "saveExposureToFile: $exposure")
         } catch (e: Exception) {
             e.printStackTrace()
         }
