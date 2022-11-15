@@ -81,6 +81,15 @@ void on_marking(int index, int code) {
     m_pJniEnv->CallVoidMethod(g_touchObj, onMarking_method_id, index, code);
 }
 
+// 触控日志回调
+//tackingId ：触控ID
+//x	        : x像素坐标
+//y		    : y像素坐标
+//bDown     : true->按下事件，false->抬起事件
+void log_callback(int trackingId , int x, int y, bool bDown) {
+    LOGCATD("log_callback: trackingId=%i, x=%i, y=%i, bDown=%i", trackingId, x, y, bDown);
+}
+
 void callback_func(int index, int code) {
     LOGCATD("-------------- callback_func: index: %i, code: %i", index, code);
     on_marking(index, code);
@@ -190,6 +199,7 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
     param.m_pxHeight = pxHeight;
 //    param.m_maxTouch = 1;
     param.m_markCallBack = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
+    param.m_logCallBack = std::bind(&log_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     param.m_markPoints = srcPoints;
     param.m_dataPath = "/sdcard/Download";
     int ret = InitTouchScreen(param);

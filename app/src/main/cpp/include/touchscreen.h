@@ -25,6 +25,7 @@ public:
     std::string                      m_dataPath;
     std::vector<MarkPoint>           m_markPoints;
     std::function<void( int , int )> m_markCallBack{nullptr};
+	std::function<void( int , int , int , bool)> m_logCallBack{nullptr};
 };
 
 /*
