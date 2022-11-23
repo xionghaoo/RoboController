@@ -449,6 +449,7 @@ public final class CameraServer extends Handler {
 		private Bitmap framebuffer;
 		private TouchManager touchManager = TouchManager.Companion.instance();
 		private int currentMarkIndex = 0;
+		private int runMode = 1;
 
 		private CameraThread(final Context context, final UsbControlBlock ctrlBlock, ArrayList<PointF> pointArr) {
 			super("CameraThread");
@@ -494,10 +495,11 @@ public final class CameraServer extends Handler {
 			touchManager.initialTouchPanel(points, w, h);
 
 			if (MarkUtil.Companion.isRunMode()) {
-				touchManager.setCurrentMode(2);
+				runMode = 2;
 			} else {
-				touchManager.setCurrentMode(1);
+				runMode = 1;
 			}
+			touchManager.setCurrentMode(runMode);
 
 			touchManager.setCallback((index, code) -> {
 				mHandler.processOnMarking(currentMarkIndex, code);
@@ -761,16 +763,19 @@ public final class CameraServer extends Handler {
 
 		private final IFrameCallback mIFrameCallback = frame -> {
 			// 处理前帧率
-			if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
-			if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
-			frameCount ++;
-			if (frameCount >= FIX_FPS) {
-				long curTime = System.currentTimeMillis();
-				fps = (int) (((float) frameCount) / (curTime - lastFrameTime) * 1000f);
-				frameCount = 0;
-				lastFrameTime = 0;
+			if (runMode == 1) {
+				// 标定模式
+				if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
+				if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
+				frameCount ++;
+				if (frameCount >= FIX_FPS) {
+					long curTime = System.currentTimeMillis();
+					fps = (int) (((float) frameCount) / (curTime - lastFrameTime) * 1000f);
+					frameCount = 0;
+					lastFrameTime = 0;
+				}
 			}
-			// 业务处理
+			// ----------- 业务处理 start ----------------
 			try {
 				if (framebuffer == null) {
 					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
@@ -780,16 +785,18 @@ public final class CameraServer extends Handler {
 				e.printStackTrace();
 			}
 			// 处理帧
-//			Log.d(TAG, "---------------handle frame--------------");
 			touchManager.process(framebuffer);
+			// ----------- 业务处理 end ----------------
 			// 处理后帧率
-			frameCountHandle ++;
-			if (frameCountHandle >= FIX_FPS) {
-				long curTime = System.currentTimeMillis();
-				fpsHandle = (int) (((float) frameCountHandle) / (curTime - lastHandleTime) * 1000f);
-				frameCountHandle = 0;
-				lastHandleTime = 0;
-				mHandler.processOnFpsChange(fps, fpsHandle);
+			if (runMode == 1) {
+				frameCountHandle ++;
+				if (frameCountHandle >= FIX_FPS) {
+					long curTime = System.currentTimeMillis();
+					fpsHandle = (int) (((float) frameCountHandle) / (curTime - lastHandleTime) * 1000f);
+					frameCountHandle = 0;
+					lastHandleTime = 0;
+					mHandler.processOnFpsChange(fps, fpsHandle);
+				}
 			}
 		};
 

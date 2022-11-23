@@ -172,7 +172,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     override fun onFpsChange(fps: Int, fpsHandle: Int) {
         Timber.d("onFpsChange: $fps, $fpsHandle")
-
         runOnUiThread {
             binding.tvFps.text = "相机fps: $fps"
             binding.tvFpsHandle.text = "算法处理后的fps: $fpsHandle"

@@ -2,8 +2,10 @@
 #include "LogUtil.h"
 #include "touchscreen.h"
 #include "android_utils.h"
+#include "include/aloop.h"
 
 using namespace std;
+using namespace aloop;
 
 
 int BUTTON_NUM = 4;
@@ -15,6 +17,18 @@ jobject g_touchObj;
 JavaVM *m_pJvm;
 JNIEnv *m_pJniEnv;
 bool m_bIsAttachedOnAThread = false;
+shared_ptr<ALooper> looper;
+shared_ptr<AMessage> notify;
+
+class ListenHandler: public AHandler {
+protected:
+    void onMessageReceived(const std::shared_ptr<AMessage> &msg){
+        string s;
+        msg->findString("log", &s);
+        LOGCATD("touch log: %s", s.c_str());
+    }
+};
+
 
 JNIEnv* GetJniEnv() {
 
@@ -70,6 +84,11 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
     if (env == nullptr) {
         return JNI_FALSE;
     }
+    looper = ALooper::create();
+    looper->start();
+    shared_ptr<ListenHandler> listener(new ListenHandler);
+    notify = AMessage::create(1, listener);
+    looper->registerHandler(listener);
     return JNI_VERSION_1_6;
 }
 
@@ -88,6 +107,7 @@ void on_marking(int index, int code) {
 //bDown     : true->按下事件，false->抬起事件
 void log_callback(int trackingId , int x, int y, bool bDown) {
     LOGCATD("log_callback: trackingId=%i, x=%i, y=%i, bDown=%i", trackingId, x, y, bDown);
+//    notify->setString("log", "trackingId");
 }
 
 void callback_func(int index, int code) {
@@ -199,7 +219,7 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
     param.m_pxHeight = pxHeight;
 //    param.m_maxTouch = 1;
     param.m_markCallBack = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
-    param.m_logCallBack = std::bind(&log_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+//    param.m_logCallBack = std::bind(&log_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     param.m_markPoints = srcPoints;
     param.m_dataPath = "/sdcard/Download";
     int ret = InitTouchScreen(param);
@@ -240,7 +260,7 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
         case 0:
             break;
         case 1:
-            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
+//            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
             if (markIndex >= 0) {
                 ProcessMarking(markIndex, dst);
             }

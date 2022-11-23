@@ -11,7 +11,7 @@ set(LOCAL_CERTIFICATE platform)
 # Declares and names the project.
 
 project("robocontroller")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
 set(OPENCV_DIR ${CMAKE_SOURCE_DIR}/../../../opencv)
 set(THIRD_LIBS ${CMAKE_SOURCE_DIR}/../jniLibs)
