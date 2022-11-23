@@ -2,11 +2,8 @@
 #include "LogUtil.h"
 #include "touchscreen.h"
 #include "android_utils.h"
-#include "include/aloop.h"
 
 using namespace std;
-using namespace aloop;
-
 
 int BUTTON_NUM = 4;
 
@@ -17,18 +14,6 @@ jobject g_touchObj;
 JavaVM *m_pJvm;
 JNIEnv *m_pJniEnv;
 bool m_bIsAttachedOnAThread = false;
-shared_ptr<ALooper> looper;
-shared_ptr<AMessage> notify;
-
-class ListenHandler: public AHandler {
-protected:
-    void onMessageReceived(const std::shared_ptr<AMessage> &msg){
-        string s;
-        msg->findString("log", &s);
-        LOGCATD("touch log: %s", s.c_str());
-    }
-};
-
 
 JNIEnv* GetJniEnv() {
 
@@ -84,11 +69,6 @@ JNI_OnLoad(JavaVM* vm, void* reserved) {
     if (env == nullptr) {
         return JNI_FALSE;
     }
-    looper = ALooper::create();
-    looper->start();
-    shared_ptr<ListenHandler> listener(new ListenHandler);
-    notify = AMessage::create(1, listener);
-    looper->registerHandler(listener);
     return JNI_VERSION_1_6;
 }
 
