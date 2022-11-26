@@ -51,4 +51,5 @@ interface IUVCService {
 	void setExposureMode(int serviceId, int mode);
 	void setExposure(int serviceId, int exposure);
 	int getExposure(int serviceId);
+	void setTouchMask(int x, int y, int width, int height);
 }

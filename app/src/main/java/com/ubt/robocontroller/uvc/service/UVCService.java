@@ -322,12 +322,14 @@ public class UVCService extends BaseService {
 //********************************************************************************
 	private final IUVCService.Stub mBasicBinder = new IUVCService.Stub() {
 		private IUVCServiceCallback mCallback;
+		private int cacheServiceId;
 
 		@Override
 		public int select(final UsbDevice device, final IUVCServiceCallback callback) throws RemoteException {
 			if (DEBUG) Log.d(TAG, "mBasicBinder#select:device=" + (device !=null ? device.getDeviceName() : null));
 			mCallback = callback;
 			final int serviceId = device.hashCode();
+			cacheServiceId = serviceId;
 			CameraServer server = null;
 			synchronized (sServiceSync) {
 				server = sCameraServers.get(serviceId);
@@ -408,6 +410,7 @@ public class UVCService extends BaseService {
 
 		@Override
 		public void connect(final int serviceId) throws RemoteException {
+			cacheServiceId = serviceId;
 			if (DEBUG) Log.d(TAG, "mBasicBinder#connect:");
 			final CameraServer server = getCameraServer(serviceId);
 			if (server == null) {
@@ -506,6 +509,15 @@ public class UVCService extends BaseService {
 				return server.getExposure();
 			} else {
 				return -1;
+			}
+		}
+
+		@Override
+		public void setTouchMask(int x, int y, int width, int height) throws RemoteException {
+			if (DEBUG) Log.d(TAG, "mBasicBinder#setTouchMask:");
+			final CameraServer server = getCameraServer(cacheServiceId);
+			if (server != null) {
+				server.setTouchMask(x, y, width, height);
 			}
 		}
 };

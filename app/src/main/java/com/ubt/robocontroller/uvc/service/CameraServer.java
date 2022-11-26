@@ -33,6 +33,7 @@ import android.graphics.YuvImage;
 import android.media.AudioManager;
 import android.media.MediaScannerConnection;
 import android.media.SoundPool;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -262,6 +263,19 @@ public final class CameraServer extends Handler {
 		}
 	}
 
+	public void setTouchMask(int x, int y, int width, int height) {
+		if (mRendererHolder != null) {
+			Bundle data = new Bundle();
+			data.putInt("x", x);
+			data.putInt("y", y);
+			data.putInt("w", width);
+			data.putInt("h", height);
+			Message msg = obtainMessage(MSG_SET_TOUCH_MASK);
+			msg.setData(data);
+			sendMessage(msg);
+		}
+	}
+
 //********************************************************************************
 	private void processOnCameraStart() {
 		if (DEBUG) Log.d(TAG, "processOnCameraStart:");
@@ -339,6 +353,7 @@ public final class CameraServer extends Handler {
 	private static final int MSG_RELEASE = 9;
 	private static final int MSG_SET_EXPOSURE_MODE = 10;
 	private static final int MSG_SET_EXPOSURE = 11;
+	private static final int MSG_SET_TOUCH_MASK = 12;
 
 	@Override
 	public void handleMessage(final Message msg) {
@@ -377,6 +392,14 @@ public final class CameraServer extends Handler {
 			break;
 		case MSG_SET_EXPOSURE:
 			thread.setExposure((int)msg.obj);
+			break;
+		case MSG_SET_TOUCH_MASK:
+			Bundle data = msg.getData();
+			int x = data.getInt("x");
+			int y = data.getInt("y");
+			int w = data.getInt("w");
+			int h = data.getInt("h");
+			thread.setTouchMask(x, y, w, h);
 			break;
 		default:
 			throw new RuntimeException("unsupported message:what=" + msg.what);
@@ -750,16 +773,13 @@ public final class CameraServer extends Handler {
 			mUVCCamera.setExposure(exposure);
 		}
 
+		public void setTouchMask(int x, int y, int width, int height) {
+			Log.d(TAG_THREAD, "setTouchMask: "+x+","+y+","+width+","+height);
+		}
+
 		public int getExposure() {
 			return mUVCCamera.getExposure();
 		}
-
-/*		// if you need frame data as ByteBuffer on Java side, you can use this callback method with UVCCamera#setFrameCallback
-		private final IFrameCallback mIFrameCallback = new IFrameCallback() {
-			@Override
-			public void onFrame(final ByteBuffer frame) {
-			}
-		}; */
 
 		private final IFrameCallback mIFrameCallback = frame -> {
 			// 处理前帧率
@@ -785,7 +805,7 @@ public final class CameraServer extends Handler {
 				e.printStackTrace();
 			}
 			// 处理帧
-			touchManager.process(framebuffer);
+//			touchManager.process(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1) {
