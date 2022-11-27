@@ -805,7 +805,7 @@ public final class CameraServer extends Handler {
 				e.printStackTrace();
 			}
 			// 处理帧
-//			touchManager.process(framebuffer);
+			touchManager.process(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1) {
