@@ -257,3 +257,9 @@ Java_com_ubt_robocontroller_TouchManager_setMarkIndex(JNIEnv *env, jobject thiz,
     markIndex = index;
     LOGCATD("setMarkIndex: %i", index);
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ubt_robocontroller_TouchManager_setMaskArea(JNIEnv *env, jobject thiz, jint x, jint y,
+                                                     jint width, jint height) {
+    GenMask(x, y, width, height);
+}

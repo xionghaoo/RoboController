@@ -775,6 +775,7 @@ public final class CameraServer extends Handler {
 
 		public void setTouchMask(int x, int y, int width, int height) {
 			Log.d(TAG_THREAD, "setTouchMask: "+x+","+y+","+width+","+height);
+			touchManager.setMaskArea(x, y, width, height);
 		}
 
 		public int getExposure() {
@@ -798,6 +799,7 @@ public final class CameraServer extends Handler {
 			// ----------- 业务处理 start ----------------
 			try {
 				if (framebuffer == null) {
+					Timber.d("--------- frame callback create bitmap -------------");
 					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
 				}
 				framebuffer.copyPixelsFromBuffer(frame);
