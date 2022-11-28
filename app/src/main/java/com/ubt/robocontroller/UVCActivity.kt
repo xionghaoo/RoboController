@@ -109,6 +109,8 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             // 权限申请
             permissionTask()
         }
+
+        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME}_${BuildConfig.VERSION_CODE}"
     }
 
     override fun onNewIntent(intent: Intent?) {
