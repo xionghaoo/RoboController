@@ -785,10 +785,11 @@ public final class CameraServer extends Handler {
 		private final IFrameCallback mIFrameCallback = frame -> {
 			// 处理前帧率
 			if (runMode == 1) {
+				frameCount ++;
 				// 标定模式
 				if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
 				if (lastFrameTime == 0) lastFrameTime = System.currentTimeMillis();
-				frameCount ++;
+
 				if (frameCount >= FIX_FPS) {
 					long curTime = System.currentTimeMillis();
 					fps = (int) (((float) frameCount) / (curTime - lastFrameTime) * 1000f);
@@ -806,6 +807,10 @@ public final class CameraServer extends Handler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+//			if (runMode == 2 && frameCount > 600) {
+//				Timber.d("--------- frame callback is running -------------");
+//				frameCount = 0;
+//			}
 			// 处理帧
 			touchManager.process(framebuffer);
 			// ----------- 业务处理 end ----------------
