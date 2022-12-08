@@ -278,8 +278,8 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             val lp = vMarker.layoutParams as FrameLayout.LayoutParams
             lp.width = markSize.toInt()
             lp.height = markSize.toInt()
-            vMarker.x = p.x
-            vMarker.y = p.y
+            vMarker.x = p.x - lp.width / 2
+            vMarker.y = p.y - lp.height / 2
             vMarker.visibility = if (index == 0) View.VISIBLE else View.INVISIBLE
         }
         return points
