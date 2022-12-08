@@ -13,8 +13,8 @@ android {
         applicationId "com.ubt.robocontroller"
         minSdk 23
         targetSdk 33
-        versionCode 17
-        versionName "0.2.4"
+        versionCode 18
+        versionName "0.2.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {

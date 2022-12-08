@@ -18,6 +18,7 @@ import android.os.Environment
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -41,6 +42,7 @@ import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
@@ -79,6 +81,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     private val w = 1920
     private val h = 1080
+    private var markerMaxIndex: Int = 0
 
     private val activityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         permissionTask()
@@ -134,26 +137,30 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 }
                 1600 -> {
                     // 显示采集动画，时间：300ms
-                    when(index) {
-                        0 -> binding.vMark0.marking()
-                        1 -> binding.vMark1.marking()
-                        2 -> binding.vMark2.marking()
-                        3 -> binding.vMark3.marking()
-                    }
+//                    when(index) {
+//                        0 -> binding.vMark0.marking()
+//                        1 -> binding.vMark1.marking()
+//                        2 -> binding.vMark2.marking()
+//                        3 -> binding.vMark3.marking()
+//                    }
+                    val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+                    v.marking()
                 }
                 1 -> {
-                    if (index == 3) {
+                    if (index == markerMaxIndex) {
                         // 4个点标定完成
                         // 显示等待动画
                         binding.tvMarkInfo.text = "标定完成, 正在进入工作模式"
                     } else {
                         binding.tvMarkInfo.text = "当前标定点：$index"
-                        when(index) {
-                            0 -> binding.vMark1.visibility = View.VISIBLE
-                            1 -> binding.vMark2.visibility = View.VISIBLE
-                            2 -> binding.vMark3.visibility = View.VISIBLE
-                            else -> {}
-                        }
+//                        when(index) {
+//                            0 -> binding.vMark1.visibility = View.VISIBLE
+//                            1 -> binding.vMark2.visibility = View.VISIBLE
+//                            2 -> binding.vMark3.visibility = View.VISIBLE
+//                            else -> {}
+//                        }
+                        val v: MarkView = binding.containerMarkers.getChildAt(index + 1) as MarkView
+                        v.visibility = View.VISIBLE
                     }
                 }
                 2 -> {
@@ -181,44 +188,27 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     private fun initial(pid: Int) {
-        binding.vMark0.setShowTime(300)
-        binding.vMark1.setShowTime(300)
-        binding.vMark2.setShowTime(300)
-        binding.vMark3.setShowTime(300)
+//        binding.vMark0.setShowTime(300)
+//        binding.vMark1.setShowTime(300)
+//        binding.vMark2.setShowTime(300)
+//        binding.vMark3.setShowTime(300)
 
-        val points = arrayListOf<PointF>(
-            PointF(w * 0.052f, h * 0.092f),
-            PointF(w * 0.052f, h * 0.907f),
-            PointF(w * 0.948f, h * 0.092f),
-            PointF(w * 0.948f, h * 0.907f)
-        )
+        // origin
+//        val points = arrayListOf<PointF>(
+//            PointF(w * 0.052f, h * 0.092f),
+//            PointF(w * 0.052f, h * 0.907f),
+//            PointF(w * 0.948f, h * 0.092f),
+//            PointF(w * 0.948f, h * 0.907f)
+//        )
 
-        val markSize = resources.getDimension(R.dimen.mark_view_size) / 2f
+        // 1755
 
-        // 设置四个中心点
-        val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
-        lp0.leftMargin = (points[0].x - markSize).roundToInt()
-        lp0.topMargin = (points[0].y - markSize).roundToInt()
 
-        val lp1 = binding.vMark1.layoutParams as ConstraintLayout.LayoutParams
-        lp1.leftMargin = (points[1].x - markSize).roundToInt()
-        lp1.bottomMargin = ((h - points[1].y) - markSize).roundToInt()
+//        Timber.d("mark size: ${markSize}")
+//        Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
+//        Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
 
-        val lp2 = binding.vMark2.layoutParams as ConstraintLayout.LayoutParams
-        lp2.rightMargin = ((w - points[2].x) - markSize).roundToInt()
-        lp2.topMargin = (points[2].y - markSize).roundToInt()
-
-        val lp3 = binding.vMark3.layoutParams as ConstraintLayout.LayoutParams
-        lp3.rightMargin = ((w - points[3].x) - markSize).roundToInt()
-        lp3.bottomMargin = ((h - points[3].y) - markSize).roundToInt()
-
-        points.forEach { p ->
-            Timber.d("point: ${p.x}, ${p.y}")
-        }
-
-        Timber.d("mark size: ${markSize}")
-        Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
-        Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
+        val points = initialMarkers()
 
         if (MarkUtil.isRunMode()) {
             // 当前为运行模式
@@ -250,6 +240,49 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         fragmentManager.beginTransaction()
             .add(R.id.fragment_container, fragment)
             .commit()
+    }
+
+    private fun initialMarkers(): ArrayList<PointF> {
+        /**
+         * 1.（0.0520833，0.0925926）
+        2.（0.0520833,0.5）
+        3.（0.0520833，0.9074074）
+        4.（0.5，0.0925926）
+        5.（0.5，0.5）
+        6.（0.5，0.9074074）
+        7.（0.9479167，0.0925926）
+        8.（0.947916，0.5）
+        9.（0.9479167，0.9074074）
+         */
+        val points = arrayListOf<PointF>(
+            PointF(w * 0.0520833f, h * 0.0925926f),
+            PointF(w * 0.0520833f, h * 0.5f),
+            PointF(w * 0.0520833f, h * 0.9074074f),
+            PointF(w * 0.5f, h * 0.0925926f),
+            PointF(w * 0.5f, h * 0.5f),
+            PointF(w * 0.5f, h * 0.9074074f),
+            PointF(w * 0.9479167f, h * 0.0925926f),
+            PointF(w * 0.947916f, h * 0.5f),
+            PointF(w * 0.9479167f, h * 0.9074074f),
+        )
+        markerMaxIndex = points.size - 1
+
+        val markSize = resources.getDimension(R.dimen.mark_view_size)
+
+        binding.containerMarkers.removeAllViews()
+        points.forEachIndexed { index, p ->
+            Timber.d("point: ${p.x}, ${p.y}")
+            val vMarker = MarkView(this)
+            vMarker.setShowTime(300)
+            binding.containerMarkers.addView(vMarker)
+            val lp = vMarker.layoutParams as FrameLayout.LayoutParams
+            lp.width = markSize.toInt()
+            lp.height = markSize.toInt()
+            vMarker.x = p.x
+            vMarker.y = p.y
+            vMarker.visibility = if (index == 0) View.VISIBLE else View.INVISIBLE
+        }
+        return points
     }
 
     private fun saveExposureToFile(exposure: Int) {

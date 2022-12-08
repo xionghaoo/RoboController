@@ -473,6 +473,7 @@ public final class CameraServer extends Handler {
 		private TouchManager touchManager = TouchManager.Companion.instance();
 		private int currentMarkIndex = 0;
 		private int runMode = 1;
+		private int markerMaxIndex = 0;
 
 		private CameraThread(final Context context, final UsbControlBlock ctrlBlock, ArrayList<PointF> pointArr) {
 			super("CameraThread");
@@ -513,6 +514,7 @@ public final class CameraServer extends Handler {
 			if (points == null) {
 				return;
 			}
+			markerMaxIndex = points.size() - 1;
 			Log.d(TAG_THREAD, "received points: " + points.size());
 			// 初始化触控程序
 			touchManager.initialTouchPanel(points, w, h);
@@ -529,7 +531,7 @@ public final class CameraServer extends Handler {
 
 				switch (code) {
 					case 1606: {
-						if (currentMarkIndex == 3) {
+						if (currentMarkIndex == markerMaxIndex) {
 							touchManager.setCurrentMode(2);
 						}
 						break;
@@ -539,7 +541,7 @@ public final class CameraServer extends Handler {
 						break;
 					}
 					case 1: {
-						if (currentMarkIndex == 3) {
+						if (currentMarkIndex == markerMaxIndex) {
 							// 4个点标定完成
 							// 显示等待动画
 						} else {

@@ -10,57 +10,12 @@
         android:id="@+id/fragment_container"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_gravity="end|center"/>
+        android:layout_marginEnd="150dp"
+        android:layout_gravity="bottom|end"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-
-        <Button
-            android:id="@+id/btn_mark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="标定0"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <com.ubt.robocontroller.MarkView
-            android:id="@+id/v_mark_0"
-            android:layout_width="@dimen/mark_view_size"
-            android:layout_height="@dimen/mark_view_size"
-            android:layout_marginStart="@dimen/mark_view_margin"
-            android:layout_marginTop="@dimen/mark_view_margin"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.ubt.robocontroller.MarkView
-            android:id="@+id/v_mark_3"
-            android:layout_width="@dimen/mark_view_size"
-            android:layout_height="@dimen/mark_view_size"
-            android:layout_margin="@dimen/mark_view_margin"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <com.ubt.robocontroller.MarkView
-            android:id="@+id/v_mark_1"
-            android:layout_width="@dimen/mark_view_size"
-            android:layout_height="@dimen/mark_view_size"
-            android:layout_margin="@dimen/mark_view_margin"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <com.ubt.robocontroller.MarkView
-            android:id="@+id/v_mark_2"
-            android:layout_width="@dimen/mark_view_size"
-            android:layout_height="@dimen/mark_view_size"
-            android:layout_margin="@dimen/mark_view_margin"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/btn_marking"
@@ -87,7 +42,7 @@
             android:id="@+id/tv_mark_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="120dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -106,10 +61,10 @@
             android:id="@+id/tv_fps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="120dp"
             android:layout_marginTop="20dp"
             tools:text="fps"
-            app:layout_constraintStart_toEndOf="@+id/v_mark_0"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -139,16 +94,6 @@
             app:layout_constraintStart_toStartOf="@+id/tv_exposure"
             app:layout_constraintTop_toBottomOf="@+id/tv_exposure" />
 
-<!--        <SeekBar-->
-<!--            android:id="@+id/sb_exposure"-->
-<!--            android:layout_width="200dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginStart="20dp"-->
-<!--            android:max="100"-->
-<!--            app:layout_constraintBottom_toBottomOf="@+id/btn_set_exposure_mode"-->
-<!--            app:layout_constraintStart_toEndOf="@+id/btn_set_exposure_mode"-->
-<!--            app:layout_constraintTop_toTopOf="@+id/btn_set_exposure_mode" />-->
-
         <EditText
             android:id="@+id/edt_exposure"
             android:layout_width="100dp"
@@ -172,13 +117,18 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <FrameLayout
+        android:id="@+id/container_markers"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <TextView
         android:id="@+id/tv_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_marginBottom="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="60dp"
         android:textSize="16sp"/>
 
 </FrameLayout>

@@ -37,9 +37,13 @@ class MarkView : View {
     private var delay = 50L
 
     constructor(context: Context?) : super(context) {
-
+        init()
     }
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+        init()
+    }
+
+    private fun init() {
         paint.style = Paint.Style.FILL
         paint.color = Color.GRAY
 
