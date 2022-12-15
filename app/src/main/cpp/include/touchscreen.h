@@ -53,8 +53,9 @@ int    PorcessTouchData(cv::Mat & frame);
 /*
 *设置掩码模板，用于支持一些特殊点击事件
 *x:0,y:0,width:0,height:0为清空该mask缓存
+*disableflag:0:设置触控区域,1:设置非触控区域
 */
-int   GenMask(int x, int y, int width, int height);
+int   GenMask(int x, int y, int width, int height, bool disableflag);
 
 /*
 *清空标定缓存

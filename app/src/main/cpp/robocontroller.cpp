@@ -260,6 +260,6 @@ Java_com_ubt_robocontroller_TouchManager_setMarkIndex(JNIEnv *env, jobject thiz,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_setMaskArea(JNIEnv *env, jobject thiz, jint x, jint y,
-                                                     jint width, jint height) {
-    GenMask(x, y, width, height);
+                                                     jint width, jint height, jboolean isMask) {
+    GenMask(x, y, width, height, isMask);
 }

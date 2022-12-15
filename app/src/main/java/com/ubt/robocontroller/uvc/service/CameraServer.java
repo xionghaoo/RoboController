@@ -263,13 +263,14 @@ public final class CameraServer extends Handler {
 		}
 	}
 
-	public void setTouchMask(int x, int y, int width, int height) {
+	public void setTouchMask(int x, int y, int width, int height, boolean isMask) {
 		if (mRendererHolder != null) {
 			Bundle data = new Bundle();
 			data.putInt("x", x);
 			data.putInt("y", y);
 			data.putInt("w", width);
 			data.putInt("h", height);
+			data.putBoolean("isMask", isMask);
 			Message msg = obtainMessage(MSG_SET_TOUCH_MASK);
 			msg.setData(data);
 			sendMessage(msg);
@@ -399,7 +400,8 @@ public final class CameraServer extends Handler {
 			int y = data.getInt("y");
 			int w = data.getInt("w");
 			int h = data.getInt("h");
-			thread.setTouchMask(x, y, w, h);
+			boolean isMask = data.getBoolean("isMask");
+			thread.setTouchMask(x, y, w, h, isMask);
 			break;
 		default:
 			throw new RuntimeException("unsupported message:what=" + msg.what);
@@ -775,9 +777,9 @@ public final class CameraServer extends Handler {
 			mUVCCamera.setExposure(exposure);
 		}
 
-		public void setTouchMask(int x, int y, int width, int height) {
-			Log.d(TAG_THREAD, "setTouchMask: "+x+","+y+","+width+","+height);
-			touchManager.setMaskArea(x, y, width, height);
+		public void setTouchMask(int x, int y, int width, int height, boolean isMask) {
+			Log.d(TAG_THREAD, "setTouchMask: "+x+","+y+","+width+","+height+","+isMask);
+			touchManager.setMaskArea(x, y, width, height, isMask);
 		}
 
 		public int getExposure() {

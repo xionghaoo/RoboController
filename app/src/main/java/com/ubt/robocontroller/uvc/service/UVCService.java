@@ -513,11 +513,11 @@ public class UVCService extends BaseService {
 		}
 
 		@Override
-		public void setTouchMask(int x, int y, int width, int height) throws RemoteException {
+		public void setTouchMask(int x, int y, int width, int height, boolean isMask) throws RemoteException {
 			if (DEBUG) Log.d(TAG, "mBasicBinder#setTouchMask:");
 			final CameraServer server = getCameraServer(cacheServiceId);
 			if (server != null) {
-				server.setTouchMask(x, y, width, height);
+				server.setTouchMask(x, y, width, height, isMask);
 			}
 		}
 };

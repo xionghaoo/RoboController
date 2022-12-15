@@ -70,7 +70,7 @@ class TouchManager {
      */
     external fun exitTouchPanel()
 
-    external fun setMaskArea(x: Int, y: Int, width: Int, height: Int)
+    external fun setMaskArea(x: Int, y: Int, width: Int, height: Int, isMask: Boolean)
 
     interface Callback {
         fun onMarking(index: Int, code: Int)
