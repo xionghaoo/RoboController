@@ -524,7 +524,7 @@ public final class CameraServer extends Handler {
 			if (MarkUtil.Companion.isRunMode()) {
 				runMode = 2;
 			} else {
-				runMode = 1;
+				runMode = 8;
 			}
 			touchManager.setCurrentMode(runMode);
 
@@ -532,39 +532,50 @@ public final class CameraServer extends Handler {
 				mHandler.processOnMarking(currentMarkIndex, code);
 
 				switch (code) {
-					case 1606: {
-						if (currentMarkIndex == markerMaxIndex) {
-							touchManager.setCurrentMode(2);
-						}
-						break;
-					}
-					case 1600: {
-						// 处理UI
+					case 1613:
+					case 1610: {
+						// 初始化标定
+						touchManager.setMarkIndex(currentMarkIndex);
 						break;
 					}
 					case 1: {
-						if (currentMarkIndex == markerMaxIndex) {
-							// 4个点标定完成
-							// 显示等待动画
-						} else {
-//							if (index == 0) {
-//								currentMarkIndex = 1;
-//							} else if (index == 1) {
-//								currentMarkIndex = 2;
-//							} else if (index == 2) {
-//								currentMarkIndex = 3;
-//							}
+						// 当前标定点完成，继续标定下一个点
+						if (currentMarkIndex < markerMaxIndex) {
 							currentMarkIndex = index + 1;
 							touchManager.setMarkIndex(currentMarkIndex);
 						}
+					}
+					case 1606: {
+						// 进入工作模式
+						touchManager.setCurrentMode(2);
 						break;
 					}
+//					case 1600: {
+//						// 处理UI
+//						break;
+//					}
+//					case 1: {
+//						if (currentMarkIndex == markerMaxIndex) {
+//							// 4个点标定完成
+//							// 显示等待动画
+//						} else {
+////							if (index == 0) {
+////								currentMarkIndex = 1;
+////							} else if (index == 1) {
+////								currentMarkIndex = 2;
+////							} else if (index == 2) {
+////								currentMarkIndex = 3;
+////							}
+//							currentMarkIndex = index + 1;
+//							touchManager.setMarkIndex(currentMarkIndex);
+//						}
+//						break;
+//					}
 				}
 
 			});
-
-			// 初始化标定
 			touchManager.setMarkIndex(currentMarkIndex);
+
 		}
 
 		@Override
@@ -788,7 +799,7 @@ public final class CameraServer extends Handler {
 
 		private final IFrameCallback mIFrameCallback = frame -> {
 			// 处理前帧率
-			if (runMode == 1) {
+			if (runMode == 1 || runMode == 8) {
 				frameCount ++;
 				// 标定模式
 				if (lastHandleTime == 0) lastHandleTime = System.currentTimeMillis();
@@ -819,7 +830,7 @@ public final class CameraServer extends Handler {
 			touchManager.process(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
-			if (runMode == 1) {
+			if (runMode == 1 || runMode == 8) {
 				frameCountHandle ++;
 				if (frameCountHandle >= FIX_FPS) {
 					long curTime = System.currentTimeMillis();

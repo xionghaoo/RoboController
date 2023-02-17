@@ -231,7 +231,7 @@ Java_com_ubt_robocontroller_TouchManager_setCurrentMode(JNIEnv *env, jobject thi
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobject image) {
-//    LOGCATD("TouchManager_process: %i", markMode);
+    LOGCATD("TouchManager_process: %i %i", markMode, markIndex);
     cv::Mat frame;
     bitmap_to_mat(env, image, frame);
     cv::Mat dst;
@@ -239,10 +239,12 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
     switch (markMode) {
         case 0:
             break;
+        case 8:
         case 1:
 //            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
             if (markIndex >= 0) {
-                ProcessMarking(markIndex, dst);
+                int ret = ProcessMarking(markIndex, dst);
+                LOGCATD("ProcessMarking ret = %i", ret);
             }
             break;
         case 2:

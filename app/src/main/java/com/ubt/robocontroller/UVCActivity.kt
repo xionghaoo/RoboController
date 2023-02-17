@@ -129,40 +129,77 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             binding.btnMarking.text = "onMarking: index=$index, code=$code"
 
             when(code) {
-                1606 -> {
-                    //清除标定缓存
-                    //停止显示动画
-                    //设置 正常工作 模式
-                    binding.tvMarkInfo.text = "工作模式"
+//                8 -> {
+//                    // 自动标定模式
+//                    ToastUtil.show(this, "进入自动标定模式")
+//                    Timber.d("进入自动标定模式")
+//                }
+                1608 -> {
+                    // 显示黑色背景
+                    binding.vBg.visibility = View.VISIBLE
                 }
-                1600 -> {
-                    // 显示采集动画，时间：300ms
-//                    when(index) {
-//                        0 -> binding.vMark0.marking()
-//                        1 -> binding.vMark1.marking()
-//                        2 -> binding.vMark2.marking()
-//                        3 -> binding.vMark3.marking()
-//                    }
+                1612 -> {
+                    // 显示白色背景图
+                    binding.vBg.setBackgroundColor(resources.getColor(R.color.white))
+                }
+                1613 -> {
+                    // 第一个标定点
+                    binding.vBg.setBackgroundColor(resources.getColor(R.color.black))
                     val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
-                    v.marking()
+                    v.visibility = View.VISIBLE
+                }
+                1610 -> {
+                    // 标定点消失
+                    val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+                    v.visibility = View.INVISIBLE
                 }
                 1 -> {
-                    if (index == markerMaxIndex) {
-                        // 4个点标定完成
-                        // 显示等待动画
-                        binding.tvMarkInfo.text = "标定完成, 正在进入工作模式"
-                    } else {
-                        binding.tvMarkInfo.text = "当前标定点：$index"
-//                        when(index) {
-//                            0 -> binding.vMark1.visibility = View.VISIBLE
-//                            1 -> binding.vMark2.visibility = View.VISIBLE
-//                            2 -> binding.vMark3.visibility = View.VISIBLE
-//                            else -> {}
-//                        }
-                        val v: MarkView = binding.containerMarkers.getChildAt(index + 1) as MarkView
+                    // 标定下一个点
+                    if (index < markerMaxIndex) {
+                        val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
                         v.visibility = View.VISIBLE
                     }
                 }
+                1606 -> {
+                    // 进入工作模式
+                    binding.vBg.visibility = View.GONE
+                    binding.tvMarkInfo.text = "工作模式"
+                }
+
+//                1606 -> {
+//                    //清除标定缓存
+//                    //停止显示动画
+//                    //设置 正常工作 模式
+//                    binding.tvMarkInfo.text = "工作模式"
+//                }
+//                1600 -> {
+//                    // 显示采集动画，时间：300ms
+////                    when(index) {
+////                        0 -> binding.vMark0.marking()
+////                        1 -> binding.vMark1.marking()
+////                        2 -> binding.vMark2.marking()
+////                        3 -> binding.vMark3.marking()
+////                    }
+//                    val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+//                    v.marking()
+//                }
+//                1 -> {
+//                    if (index == markerMaxIndex) {
+//                        // 4个点标定完成
+//                        // 显示等待动画
+//                        binding.tvMarkInfo.text = "标定完成, 正在进入工作模式"
+//                    } else {
+//                        binding.tvMarkInfo.text = "当前标定点：$index"
+////                        when(index) {
+////                            0 -> binding.vMark1.visibility = View.VISIBLE
+////                            1 -> binding.vMark2.visibility = View.VISIBLE
+////                            2 -> binding.vMark3.visibility = View.VISIBLE
+////                            else -> {}
+////                        }
+//                        val v: MarkView = binding.containerMarkers.getChildAt(index + 1) as MarkView
+//                        v.visibility = View.VISIBLE
+//                    }
+//                }
                 2 -> {
                     // 显示错误信息，等待返回码 102
                     binding.tvMarkInfo.text = "标定错误"
@@ -188,26 +225,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     }
 
     private fun initial(pid: Int) {
-//        binding.vMark0.setShowTime(300)
-//        binding.vMark1.setShowTime(300)
-//        binding.vMark2.setShowTime(300)
-//        binding.vMark3.setShowTime(300)
-
-        // origin
-//        val points = arrayListOf<PointF>(
-//            PointF(w * 0.052f, h * 0.092f),
-//            PointF(w * 0.052f, h * 0.907f),
-//            PointF(w * 0.948f, h * 0.092f),
-//            PointF(w * 0.948f, h * 0.907f)
-//        )
-
-        // 1755
-
-
-//        Timber.d("mark size: ${markSize}")
-//        Timber.d("vMark0: ${binding.vMark0.marginLeft}, ${binding.vMark0.marginTop}")
-//        Timber.d("vMark1: ${binding.vMark1.marginLeft}, ${binding.vMark1.marginBottom}")
-
         val points = initialMarkers()
 
         if (MarkUtil.isRunMode()) {
@@ -244,56 +261,36 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     private fun initialMarkers(): ArrayList<PointF> {
         /**
-         * 1.（0.0520833，0.0925926）
-        2.（0.0520833,0.5）
-        3.（0.0520833，0.9074074）
-        4.（0.5，0.0925926）
-        5.（0.5，0.5）
-        6.（0.5，0.9074074）
-        7.（0.9479167，0.0925926）
-        8.（0.947916，0.5）
-        9.（0.9479167，0.9074074）
-         */
-//        val points = arrayListOf<PointF>(
-//            PointF(w * 0.0520833f, h * 0.0925926f),
-//            PointF(w * 0.0520833f, h * 0.5f),
-//            PointF(w * 0.0520833f, h * 0.9074074f),
-//            PointF(w * 0.5f, h * 0.0925926f),
-//            PointF(w * 0.5f, h * 0.5f),
-//            PointF(w * 0.5f, h * 0.9074074f),
-//            PointF(w * 0.9479167f, h * 0.0925926f),
-//            PointF(w * 0.947916f, h * 0.5f),
-//            PointF(w * 0.9479167f, h * 0.9074074f),
-//        )
-
-        /**
          * 25点
-         * 1.(0.0260417,0.0462963)
+        1.(0.0260417,0.0462963)
         2.(0.0260417,0.2731481)
         3.(0.0260417,0.5)
         4.(0.0260417,0.7268519)
         5.(0.0260417,0.9537037)
+
         6.(0.2630208,0.0462963)
         7.(0.2630208,0.2731481)
         8.(0.2630208,0.5)
         9.(0.2630208,0.7268519)
         10.(0.2630208,0.9537037)
+
         11.(0.5,0.0462963)
         12.(0.5,0.2731481)
         13.(0.5,0.5)
         14.(0.5,0.7268519)
         15.(0.5,0.9537037)
+
         16.(0.7369792,0.0462963)
         17.(0.7369792,0.2731481)
         18.(0.7369792,0.5)
         19.(0.7369792,0.7268519)
         20.(0.7369792,0.9537037)
+
         21.(0.9739583,0.0462963)
         22.(0.9739583,0.2731481)
         23.(0.9739583,0.5)
         24.(0.9739583,0.7268519)
         25.(0.9739583,0.9537037)
-
          */
         val points = arrayListOf<PointF>(
             // 1 - 5
@@ -330,7 +327,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
         markerMaxIndex = points.size - 1
 
-        val markSize = resources.getDimension(R.dimen.mark_view_size)
+        val markSize = 40
 
         binding.containerMarkers.removeAllViews()
         points.forEachIndexed { index, p ->
@@ -343,7 +340,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             lp.height = markSize.toInt()
             vMarker.x = p.x - lp.width / 2
             vMarker.y = p.y - lp.height / 2
-            vMarker.visibility = if (index == 0) View.VISIBLE else View.INVISIBLE
+            vMarker.visibility = View.INVISIBLE
         }
         return points
     }

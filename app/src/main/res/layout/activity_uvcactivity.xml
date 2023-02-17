@@ -117,6 +117,13 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <View
+        android:id="@+id/v_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@android:color/black"/>
+
     <FrameLayout
         android:id="@+id/container_markers"
         android:layout_width="match_parent"

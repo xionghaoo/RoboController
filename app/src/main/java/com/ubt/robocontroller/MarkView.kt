@@ -45,7 +45,7 @@ class MarkView : View {
 
     private fun init() {
         paint.style = Paint.Style.FILL
-        paint.color = Color.GRAY
+        paint.color = Color.WHITE
 
         paintMarking.style = Paint.Style.FILL
         paintMarking.color = Color.BLUE

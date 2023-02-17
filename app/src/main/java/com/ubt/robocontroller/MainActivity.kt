@@ -167,7 +167,7 @@ class MainActivity : BaseCameraActivity<ActivityMainBinding>(), CameraXPreviewFr
             PointF(w * 0.948f, h * 0.907f)
         )
 
-        val markSize = resources.getDimension(R.dimen.mark_view_size)
+        val markSize = 40
 
         // 设置四个中心点
         val lp0 = binding.vMark0.layoutParams as ConstraintLayout.LayoutParams
