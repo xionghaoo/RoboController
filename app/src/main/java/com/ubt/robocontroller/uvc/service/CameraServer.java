@@ -574,8 +574,7 @@ public final class CameraServer extends Handler {
 				}
 
 			});
-			touchManager.setMarkIndex(currentMarkIndex);
-
+//			touchManager.setMarkIndex(currentMarkIndex);
 		}
 
 		@Override

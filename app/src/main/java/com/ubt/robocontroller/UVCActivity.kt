@@ -127,13 +127,12 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
         runOnUiThread {
             binding.btnMarking.text = "onMarking: index=$index, code=$code"
-
             when(code) {
-//                8 -> {
-//                    // 自动标定模式
-//                    ToastUtil.show(this, "进入自动标定模式")
-//                    Timber.d("进入自动标定模式")
-//                }
+                8 -> {
+                    // 自动标定模式
+                    ToastUtil.show(this, "进入自动标定模式")
+                    Timber.d("进入自动标定模式")
+                }
                 1608 -> {
                     // 显示黑色背景
                     binding.vBg.visibility = View.VISIBLE
@@ -226,6 +225,24 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     private fun initial(pid: Int) {
         val points = initialMarkers()
+
+//        binding.btnStartAutoMark.setOnClickListener {
+//            CoroutineScope(Dispatchers.Default).launch {
+//                delay(1000)
+//                onMarking(0, 1608)
+//                delay(1500)
+//                onMarking(0, 1612)
+//                delay(1500)
+//                for (i in 0..24) {
+//                    onMarking(i, 1613)
+//                    delay(1500)
+//                    onMarking(i, 1610)
+//                    delay(1500)
+//                    onMarking(i, 1)
+//                }
+//                onMarking(24, 1606)
+//            }
+//        }
 
         if (MarkUtil.isRunMode()) {
             // 当前为运行模式
