@@ -130,7 +130,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             when(code) {
                 8 -> {
                     // 自动标定模式
-                    ToastUtil.show(this, "进入自动标定模式")
+//                    ToastUtil.show(this, "进入自动标定模式")
                     Timber.d("进入自动标定模式")
                 }
                 1608 -> {
@@ -250,6 +250,8 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         } else {
             binding.tvMarkInfo.text = "当前标定点：0"
         }
+
+        binding.vBg.visibility = View.VISIBLE
 
         // 设置曝光模式
         binding.btnSetExposureMode.setOnClickListener {
@@ -461,7 +463,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                             afterGetUsbPermission(usbDevice)
                         }
                     } else {
-                        Toast.makeText(this@UVCActivity, "Usb权限未授予", Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(this@UVCActivity, "Usb权限未授予", Toast.LENGTH_SHORT).show()
                         requestUsbPermission()
                     }
                 }
@@ -471,7 +473,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
 
     private fun afterGetUsbPermission(usbDevice: UsbDevice) {
         Timber.d("afterGetUsbPermission: ${usbDevice.deviceId}")
-        Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this@UVCActivity, "Usb权限已获得", Toast.LENGTH_SHORT).show()
         initial(usbDevice.productId)
 
     }

@@ -88,7 +88,7 @@ class UvcFragment : BaseFragment() {
             val intent = Intent(activity, UVCService::class.java)
             activity.startService(intent)
             activity?.runOnUiThread {
-                ToastUtil.show(context, "启动服务")
+//                ToastUtil.show(context, "启动服务")
             }
         }
 
@@ -194,7 +194,7 @@ class UvcFragment : BaseFragment() {
         val list = usbManager.deviceList.values
         list.forEach { device ->
             if (device.productId == pid) {
-                ToastUtil.show(context, "打开相机${device.productId}")
+//                ToastUtil.show(context, "打开相机${device.productId}")
                 if (mCameraClient == null) mCameraClient = CameraClient(activity, points, mCameraListener)
                 // 确认USB权限，注册回调方法
                 mCameraClient!!.select(device)
