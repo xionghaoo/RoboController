@@ -647,7 +647,7 @@ public final class CameraServer extends Handler {
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
 				mUVCCamera.updateCameraParams();
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV);
 				Log.d(TAG, "end start preview");
 
 				File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -805,9 +805,12 @@ public final class CameraServer extends Handler {
 			try {
 				if (framebuffer == null) {
 					Timber.d("--------- frame callback create bitmap -------------");
-					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
+					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
 				}
-				framebuffer.copyPixelsFromBuffer(frame);
+				// yuv格式
+				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, frame.array(), framebuffer);
+				// rgb格式
+//				framebuffer.copyPixelsFromBuffer(frame);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

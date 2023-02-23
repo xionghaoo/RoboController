@@ -60,6 +60,8 @@ class TouchManager {
      */
     external fun process(image: Bitmap)
 
+    external fun yuvToRbga(width: Int, height: Int, yuvData: ByteArray, rbgaImg: Bitmap)
+
     /**
      * 清除缓存
      */
