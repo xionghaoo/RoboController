@@ -647,7 +647,7 @@ public final class CameraServer extends Handler {
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
 				mUVCCamera.updateCameraParams();
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_NV21);
 				Log.d(TAG, "end start preview");
 
 				File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -808,7 +808,9 @@ public final class CameraServer extends Handler {
 					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
 				}
 				// yuv格式
-				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, frame.array(), framebuffer);
+				byte[] arr = new byte[frame.remaining()];
+				frame.get(arr);
+				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, arr, framebuffer);
 				// rgb格式
 //				framebuffer.copyPixelsFromBuffer(frame);
 			} catch (Exception e) {
@@ -820,6 +822,7 @@ public final class CameraServer extends Handler {
 //			}
 			// 处理帧
 			touchManager.process(framebuffer);
+//			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1) {

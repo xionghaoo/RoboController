@@ -2,6 +2,7 @@ package com.ubt.robocontroller.utils
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Environment
 import android.widget.TextView
 import java.io.*
 
@@ -108,12 +109,18 @@ class FileUtil {
             }
         }
 
-        fun saveImageToPath(img: Bitmap, path: String) {
-            try {
-                val out = FileOutputStream(path)
-                img.compress(Bitmap.CompressFormat.PNG, 100, out)
-            } catch (e: IOException) {
-                e.printStackTrace()
+        var isSave = true
+
+        fun saveImageToPath(img: Bitmap) {
+            if (isSave) {
+                isSave = false
+                val f = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "frame_image.png")
+                try {
+                    val out = FileOutputStream(f.absolutePath)
+                    img.compress(Bitmap.CompressFormat.PNG, 100, out)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
         }
 
