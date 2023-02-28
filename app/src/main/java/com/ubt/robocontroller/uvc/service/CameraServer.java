@@ -804,7 +804,8 @@ public final class CameraServer extends Handler {
 			// ----------- 业务处理 start ----------------
 			try {
 				if (framebuffer == null) {
-					Timber.d("--------- frame callback create bitmap -------------");
+					Timber.d("--------- frame width: " + mFrameWidth + ", height: " + mFrameHeight);
+					Timber.d("--------- frame callback create bitmap  -------------");
 					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
 				}
 				// yuv格式
@@ -821,8 +822,8 @@ public final class CameraServer extends Handler {
 //				frameCount = 0;
 //			}
 			// 处理帧
-			touchManager.process(framebuffer);
-//			FileUtil.Companion.saveImageToPath(framebuffer);
+//			touchManager.process(framebuffer);
+			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1) {
