@@ -8,7 +8,7 @@ using namespace std;
 int BUTTON_NUM = 4;
 
 int markMode = 0;
-int markIndex = -1;
+int markIndex = -2;
 
 jobject g_touchObj;
 JavaVM *m_pJvm;
@@ -182,13 +182,6 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
         srcPoints.emplace_back(MarkPoint(x, y));
     }
 
-    // 测试
-    //（5.2%，9.2%），（5.2%，90.7%），（94.8%，9.2%），（94.8%，90.7%）
-//    srcPoints[0] = MarkPoint(pxWidth*0.052, pxHeight*0.092);
-//    srcPoints[1] = MarkPoint(pxWidth*0.052, pxHeight*0.907);
-//    srcPoints[2] = MarkPoint(pxWidth*0.948, pxHeight*0.092);
-//    srcPoints[3] = MarkPoint(pxWidth*0.948, pxHeight*0.907);
-
     for (auto p : srcPoints) {
         LOGCATD("point: ( %f, %f )", p.m_xPoint, p.m_yPoint);
     }
@@ -242,13 +235,12 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
         case 8:
         case 1:
 //            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
-            if (markIndex >= 0) {
+            if (markIndex >= -2) {
                 int ret = ProcessMarking(markIndex, dst);
                 LOGCATD("ProcessMarking ret = %i", ret);
             }
             break;
         case 2:
-//            LOGCATD("ProcessTouchData");
             PorcessTouchData(dst);
             break;
     }

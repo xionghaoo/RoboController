@@ -473,7 +473,7 @@ public final class CameraServer extends Handler {
 
 		private Bitmap framebuffer;
 		private TouchManager touchManager = TouchManager.Companion.instance();
-		private int currentMarkIndex = 0;
+		private int currentMarkIndex = -2;
 		private int runMode = 1;
 		private int markerMaxIndex = 0;
 

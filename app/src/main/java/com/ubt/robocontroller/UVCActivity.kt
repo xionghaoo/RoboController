@@ -272,10 +272,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 }
             }
         }
-        binding.btnSaveImage.setOnClickListener {
-            FileUtil.isSave = true
-            ToastUtil.show(this, "图片已保存")
-        }
 
         fragment = UvcFragment.newInstance(pid, points)
         fragmentManager.beginTransaction()
