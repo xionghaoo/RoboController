@@ -30,6 +30,7 @@ import com.serenegiant.common.BaseActivity
 import com.serenegiant.usb.DeviceFilter
 import com.serenegiant.usb.UVCCamera
 import com.ubt.robocontroller.databinding.ActivityUvcactivityBinding
+import com.ubt.robocontroller.utils.FileUtil
 import com.ubt.robocontroller.utils.MarkUtil
 import com.ubt.robocontroller.uvc.UvcFragment
 import kotlinx.coroutines.*
@@ -270,6 +271,10 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                     updateExposure()
                 }
             }
+        }
+        binding.btnSaveImage.setOnClickListener {
+            FileUtil.isSave = true
+            ToastUtil.show(this, "图片已保存")
         }
 
         fragment = UvcFragment.newInstance(pid, points)

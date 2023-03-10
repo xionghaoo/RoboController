@@ -198,6 +198,7 @@ class UvcFragment : BaseFragment() {
                 if (mCameraClient == null) mCameraClient = CameraClient(activity, points, mCameraListener)
                 // 确认USB权限，注册回调方法
                 mCameraClient!!.select(device)
+                Timber.d("client resize: ${Config.CAMERA_WIDTH} x ${Config.CAMERA_HEIGHT}")
                 mCameraClient!!.resize(Config.CAMERA_WIDTH, Config.CAMERA_HEIGHT)
                 // 1. 如果相机已经打开，回调ICameraClientCallback::onConnect方法
                 // 2. 如果相机没有打开，调用CameraServer::CameraThread::handleOpen方法创建UVCCamera对象，并打开相机，

@@ -265,3 +265,17 @@ Java_com_ubt_robocontroller_TouchManager_setMaskArea(JNIEnv *env, jobject thiz, 
                                                      jint width, jint height, jboolean isMask) {
     GenMask(x, y, width, height, isMask);
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_ubt_robocontroller_TouchManager_yuvToRbga(JNIEnv *env, jobject thiz, jint width,
+                                                   jint height, jbyteArray yuvData_,
+                                                   jobject rbgaImg) {
+    // yuv to rbga
+    jbyte *yuvData = env->GetByteArrayElements(yuvData_, NULL);
+    Mat dstMat(height, width, CV_8UC1);
+    Mat mYuv(height + height/2, width, CV_8UC1, (uchar *)yuvData);
+    cvtColor(mYuv, dstMat, COLOR_YUV2BGRA_NV21);
+    env->ReleaseByteArrayElements(yuvData_, yuvData, 0);
+    if (dstMat.cols == 0) return;
+    mat_to_bitmap(env, dstMat, rbgaImg);
+}

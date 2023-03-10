@@ -442,7 +442,7 @@ public final class CameraServer extends Handler {
 		private static final int FIX_FPS = Config.DEFAULT_FPS;
 		private static final int FPS_MIN = FIX_FPS;
 		private static final int FPS_MAX = FIX_FPS;
-		private static final int FACTOR = 1;
+		private static final float FACTOR = 1f;
 
 		private long lastFrameTime = 0;
 		private long lastHandleTime = 0;
@@ -641,7 +641,7 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_MJPEG,FACTOR);
+					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_YUYV,FACTOR);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
@@ -657,7 +657,7 @@ public final class CameraServer extends Handler {
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
 				mUVCCamera.updateCameraParams();
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_NV21);
 				Log.d(TAG, "end start preview");
 
 				File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -814,10 +814,16 @@ public final class CameraServer extends Handler {
 			// ----------- 业务处理 start ----------------
 			try {
 				if (framebuffer == null) {
-					Timber.d("--------- frame callback create bitmap -------------");
-					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
+					Timber.d("--------- frame width: " + mFrameWidth + ", height: " + mFrameHeight);
+					Timber.d("--------- frame callback create bitmap  -------------");
+					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
 				}
-				framebuffer.copyPixelsFromBuffer(frame);
+				// yuv格式
+				byte[] arr = new byte[frame.remaining()];
+				frame.get(arr);
+				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, arr, framebuffer);
+				// rgb格式
+//				framebuffer.copyPixelsFromBuffer(frame);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -827,6 +833,7 @@ public final class CameraServer extends Handler {
 //			}
 			// 处理帧
 			touchManager.process(framebuffer);
+//			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1 || runMode == 8) {
