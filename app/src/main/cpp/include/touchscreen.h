@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 #include "opencv/highgui.h"
+
+using namespace std;
+using namespace cv;
+
 class  MarkPoint
 {
 public:
@@ -25,7 +29,7 @@ public:
     std::string                      m_dataPath;
     std::vector<MarkPoint>           m_markPoints;
     std::function<void( int , int )> m_markCallBack{nullptr};
-    std::function<void( int , int , int , bool)> m_logCallBack{nullptr};
+    std::function<void( const char*)> m_logCallBack{nullptr};
 };
 
 /*
@@ -51,7 +55,7 @@ int    ProcessMarking( int index ,  cv::Mat & frame);
 int    PorcessTouchData(cv::Mat & frame);
 
 /*
-*设置掩码模板，用于支持一些特殊点击事件
+*设置掩码模板，用于支持一些特殊触控事件
 *x:0,y:0,width:0,height:0为清空该mask缓存
 *disableflag:0:设置触控区域,1:设置非触控区域
 */

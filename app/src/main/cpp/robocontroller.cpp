@@ -85,9 +85,8 @@ void on_marking(int index, int code) {
 //x	        : x像素坐标
 //y		    : y像素坐标
 //bDown     : true->按下事件，false->抬起事件
-void log_callback(int trackingId , int x, int y, bool bDown) {
-    LOGCATD("log_callback: trackingId=%i, x=%i, y=%i, bDown=%i", trackingId, x, y, bDown);
-//    notify->setString("log", "trackingId");
+void log_callback(const char* msg) {
+    LOGCATD("log_callback: %s", msg);
 }
 
 void callback_func(int index, int code) {
@@ -156,7 +155,7 @@ JNIEXPORT jint JNICALL
 Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject thiz,
                                                            jobject list, jint pxWidth,
                                                            jint pxHeight) {
-    LOGCATD("-------------- initial touch panel ----------------");
+    LOGCATD("-------------- initial touch panel start ----------------");
     g_touchObj = env->NewGlobalRef(thiz);
 
     jclass list_cls = env->FindClass("java/util/ArrayList");
@@ -192,7 +191,7 @@ Java_com_ubt_robocontroller_TouchManager_initialTouchPanel(JNIEnv *env, jobject 
     param.m_pxHeight = pxHeight;
 //    param.m_maxTouch = 1;
     param.m_markCallBack = std::bind(&callback_func, std::placeholders::_1, std::placeholders::_2);
-//    param.m_logCallBack = std::bind(&log_callback, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    param.m_logCallBack = std::bind(&log_callback, std::placeholders::_1);
     param.m_markPoints = srcPoints;
     param.m_dataPath = "/sdcard/Download";
     int ret = InitTouchScreen(param);
