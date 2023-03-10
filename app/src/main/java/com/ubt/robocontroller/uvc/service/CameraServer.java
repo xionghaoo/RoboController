@@ -442,7 +442,7 @@ public final class CameraServer extends Handler {
 		private static final int FIX_FPS = Config.DEFAULT_FPS;
 		private static final int FPS_MIN = FIX_FPS;
 		private static final int FPS_MAX = FIX_FPS;
-		private static final int FACTOR = 1;
+		private static final float FACTOR = 1f;
 
 		private long lastFrameTime = 0;
 		private long lastHandleTime = 0;
@@ -631,7 +631,7 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_MJPEG,FACTOR);
+					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_YUYV,FACTOR);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
@@ -822,8 +822,8 @@ public final class CameraServer extends Handler {
 //				frameCount = 0;
 //			}
 			// 处理帧
-//			touchManager.process(framebuffer);
-			FileUtil.Companion.saveImageToPath(framebuffer);
+			touchManager.process(framebuffer);
+//			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
 			if (runMode == 1) {
