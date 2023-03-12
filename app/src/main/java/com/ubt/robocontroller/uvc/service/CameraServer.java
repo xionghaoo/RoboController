@@ -641,7 +641,7 @@ public final class CameraServer extends Handler {
 			synchronized (mSync) {
 				if (mUVCCamera == null) return;
 				try {
-					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_YUYV,FACTOR);
+					mUVCCamera.setPreviewSize(width, height, FPS_MIN, FPS_MAX, UVCCamera.FRAME_FORMAT_MJPEG, FACTOR);
 				} catch (final IllegalArgumentException e) {
 					try {
 						// fallback to YUV mode
@@ -832,7 +832,7 @@ public final class CameraServer extends Handler {
 //				frameCount = 0;
 //			}
 			// 处理帧
-			touchManager.process(framebuffer);
+//			touchManager.process(framebuffer);
 //			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
