@@ -217,6 +217,12 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         }
     }
 
+    /**
+     * fps实时显示
+     *
+     * @param fps
+     * @param fpsHandle
+     */
     override fun onFpsChange(fps: Int, fpsHandle: Int) {
         Timber.d("onFpsChange: $fps, $fpsHandle")
         runOnUiThread {
@@ -228,24 +234,6 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
     private fun initial(pid: Int) {
         val points = initialMarkers()
 
-//        binding.btnStartAutoMark.setOnClickListener {
-//            CoroutineScope(Dispatchers.Default).launch {
-//                delay(1000)
-//                onMarking(0, 1608)
-//                delay(1500)
-//                onMarking(0, 1612)
-//                delay(1500)
-//                for (i in 0..24) {
-//                    onMarking(i, 1613)
-//                    delay(1500)
-//                    onMarking(i, 1610)
-//                    delay(1500)
-//                    onMarking(i, 1)
-//                }
-//                onMarking(24, 1606)
-//            }
-//        }
-
         if (MarkUtil.isRunMode()) {
             // 当前为运行模式
             binding.tvMarkInfo.text = "运行模式"
@@ -253,6 +241,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             binding.tvMarkInfo.text = "当前标定点：0"
         }
 
+        // 设置黑色背景
         binding.vBg.visibility = View.VISIBLE
 
         // 设置曝光模式

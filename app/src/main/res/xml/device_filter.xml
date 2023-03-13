@@ -29,7 +29,10 @@
 	<!-- 红外相机 -->
 <!--	<usb-device vendor-id="1443" product-id="37424"/>-->
 <!--	<usb-device vendor-id="7749" product-id="3035"/>-->
-	<usb-device vendor-id="7749" product-id="12341"/>
+	<!-- 120fps -->
+<!--	<usb-device vendor-id="7749" product-id="12341"/>-->
+	<!-- 30fps -->
+	<usb-device vendor-id="3141" product-id="25446"/>
 	<!-- 全部 -->
 <!--	<usb-device class="239" subclass="2"/>	&lt;!&ndash; all device of UVC &ndash;&gt;-->
 </usb>
