@@ -211,19 +211,19 @@ Java_com_ubt_robocontroller_TouchManager_marking(JNIEnv *env, jobject thiz, jint
     cv::Mat dst;
     cvtColor(frame, dst, CV_BGRA2GRAY);
     int ret = ProcessMarking(index, dst);
-    LOGCATD("ProcessMarking: %i", ret);
+    LOGCATD("ProcessMarking: %i", index);
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_setCurrentMode(JNIEnv *env, jobject thiz, jint mode) {
     int ret = SetCurMode(mode);
     markMode = mode;
-    LOGCATD("SetCurMode: %i", ret);
+    LOGCATD("SetCurMode: %i", mode);
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobject image) {
-    LOGCATD("TouchManager_process: %i %i", markMode, markIndex);
+    LOGCATD("TouchManager_process: code=%i, index=%i", markMode, markIndex);
     cv::Mat frame;
     bitmap_to_mat(env, image, frame);
     cv::Mat dst;
@@ -236,7 +236,7 @@ Java_com_ubt_robocontroller_TouchManager_process(JNIEnv *env, jobject thiz, jobj
 //            LOGCATD("ProcessMarking index = %i，image size: %i x %i", markIndex, dst.cols, dst.rows);
             if (markIndex >= -2) {
                 int ret = ProcessMarking(markIndex, dst);
-                LOGCATD("ProcessMarking ret = %i", ret);
+                LOGCATD("ProcessMarking index = %i", markIndex);
             }
             break;
         case 2:

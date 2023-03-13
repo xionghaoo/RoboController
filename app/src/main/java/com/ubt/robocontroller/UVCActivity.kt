@@ -127,6 +127,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
         Timber.d("onMarking: $index, $code")
 
         runOnUiThread {
+            val vIndex = index + 1
             binding.btnMarking.text = "onMarking: index=$index, code=$code"
             when(code) {
                 8 -> {
@@ -145,18 +146,18 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 1613 -> {
                     // 第一个标定点
                     binding.vBg.setBackgroundColor(resources.getColor(R.color.black))
-                    val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+                    val v: MarkView = binding.containerMarkers.getChildAt(vIndex) as MarkView
                     v.visibility = View.VISIBLE
                 }
                 1610 -> {
                     // 标定点消失
-                    val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+                    val v: MarkView = binding.containerMarkers.getChildAt(vIndex) as MarkView
                     v.visibility = View.INVISIBLE
                 }
                 1 -> {
                     // 标定下一个点
-                    if (index < markerMaxIndex) {
-                        val v: MarkView = binding.containerMarkers.getChildAt(index) as MarkView
+                    if (vIndex < markerMaxIndex) {
+                        val v: MarkView = binding.containerMarkers.getChildAt(vIndex) as MarkView
                         v.visibility = View.VISIBLE
                     }
                 }

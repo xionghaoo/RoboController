@@ -532,8 +532,14 @@ public final class CameraServer extends Handler {
 				mHandler.processOnMarking(currentMarkIndex, code);
 
 				switch (code) {
+					case 1608:
+					case 1612:
+						currentMarkIndex = index + 1;
+						touchManager.setMarkIndex(currentMarkIndex);
+						break;
 					case 1613:
 					case 1610: {
+						currentMarkIndex = index + 1;
 						// 初始化标定
 						touchManager.setMarkIndex(currentMarkIndex);
 						break;
@@ -541,7 +547,6 @@ public final class CameraServer extends Handler {
 					case 1: {
 						// 当前标定点完成，继续标定下一个点
 						if (currentMarkIndex < markerMaxIndex) {
-							currentMarkIndex = index + 1;
 							touchManager.setMarkIndex(currentMarkIndex);
 						}
 					}
@@ -832,7 +837,7 @@ public final class CameraServer extends Handler {
 //				frameCount = 0;
 //			}
 			// 处理帧
-//			touchManager.process(framebuffer);
+			touchManager.process(framebuffer);
 //			FileUtil.Companion.saveImageToPath(framebuffer);
 			// ----------- 业务处理 end ----------------
 			// 处理后帧率
