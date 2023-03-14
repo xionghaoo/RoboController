@@ -532,7 +532,7 @@ public final class CameraServer extends Handler {
 				mHandler.processOnMarking(currentMarkIndex, code);
 
 				switch (code) {
-					case 1608:
+//					case 1608:
 					case 1612:
 						currentMarkIndex = index + 1;
 						touchManager.setMarkIndex(currentMarkIndex);
@@ -662,7 +662,7 @@ public final class CameraServer extends Handler {
 				mUVCCamera.setPreviewDisplay(surface);
 				mUVCCamera.startPreview();
 				mUVCCamera.updateCameraParams();
-				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_NV21);
+				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565);
 				Log.d(TAG, "end start preview");
 
 				File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -821,14 +821,14 @@ public final class CameraServer extends Handler {
 				if (framebuffer == null) {
 					Timber.d("--------- frame width: " + mFrameWidth + ", height: " + mFrameHeight);
 					Timber.d("--------- frame callback create bitmap  -------------");
-					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.ARGB_8888);
+					framebuffer = Bitmap.createBitmap(mFrameWidth, mFrameHeight, Bitmap.Config.RGB_565);
 				}
 				// yuv格式
-				byte[] arr = new byte[frame.remaining()];
-				frame.get(arr);
-				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, arr, framebuffer);
+//				byte[] arr = new byte[frame.remaining()];
+//				frame.get(arr);
+//				touchManager.yuvToRbga(mFrameWidth, mFrameHeight, arr, framebuffer);
 				// rgb格式
-//				framebuffer.copyPixelsFromBuffer(frame);
+				framebuffer.copyPixelsFromBuffer(frame);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

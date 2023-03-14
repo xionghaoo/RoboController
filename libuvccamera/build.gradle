@@ -60,6 +60,7 @@ String getNdkBuildPath() {
 	Properties properties = new Properties()
 	properties.load(project.rootProject.file('local.properties').newDataInputStream())
 	def ndkBuildingDir = properties.getProperty("ndk.dir")
+	if (ndkBuildingDir == null) throw new IllegalArgumentException("ndk.dir not found, please config in local.properties")
 	def ndkBuildPath = ndkBuildingDir
 	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 		ndkBuildPath = ndkBuildingDir + '/ndk-build.cmd'
