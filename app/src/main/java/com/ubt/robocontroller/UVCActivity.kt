@@ -22,6 +22,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.children
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
@@ -151,8 +152,13 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
                 }
                 1610 -> {
                     // 标定点消失
-                    val v: MarkView = binding.containerMarkers.getChildAt(vIndex) as MarkView
-                    v.visibility = View.INVISIBLE
+//                    val v: MarkView = binding.containerMarkers.getChildAt(vIndex) as MarkView
+//                    v.visibility = View.INVISIBLE
+                    binding.containerMarkers.children.forEach { child ->
+                        if (child is MarkView) {
+                            child.visibility = View.INVISIBLE
+                        }
+                    }
                 }
                 1 -> {
                     // 标定下一个点
