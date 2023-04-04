@@ -516,7 +516,7 @@ public final class CameraServer extends Handler {
 			if (points == null) {
 				return;
 			}
-			markerMaxIndex = points.size() - 1;
+			markerMaxIndex = points.size();
 			Log.d(TAG_THREAD, "received points: " + points.size());
 			// 初始化触控程序
 			touchManager.initialTouchPanel(points, w, h);

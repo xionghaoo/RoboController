@@ -245,10 +245,9 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             binding.tvMarkInfo.text = "运行模式"
         } else {
             binding.tvMarkInfo.text = "当前标定点：0"
+            // 设置黑色背景
+            binding.vBg.visibility = View.VISIBLE
         }
-
-        // 设置黑色背景
-        binding.vBg.visibility = View.VISIBLE
 
         // 设置曝光模式
         binding.btnSetExposureMode.setOnClickListener {
@@ -341,7 +340,7 @@ class UVCActivity : BaseActivity(), UvcFragment.OnFragmentActionListener {
             PointF(w * 0.9739583f, h * 0.9537037f),
         )
 
-        markerMaxIndex = points.size - 1
+        markerMaxIndex = points.size
 
         val markSize = 40
 
